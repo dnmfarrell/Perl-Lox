@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use lib 'lib';
+use Op;
+
+if (@ARGV > 1) {
+  print "Usage: op [script]\n";
+  exit 64;
+}
+elsif (@ARGV == 1) {
+  Op::run_file($ARGV[0]);
+}
+else {
+  Op::run_prompt();
+}
