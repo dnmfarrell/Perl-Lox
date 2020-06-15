@@ -1,10 +1,7 @@
-Op
---
-Experimental Perl lexer parser for "Op" a pure OO programming language, inspired by [Crafting Interpreters](https://craftinginterpreters.com/).
+Perl-Lox
+--------
+A WIP implementation of the Lox programming language from [Crafting Interpreters](https://craftinginterpreters.com/).
 
-Run the lexer:
-
-    ./op Point.op
 
 Copyright 2020 David Farrell
 

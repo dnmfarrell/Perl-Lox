@@ -2,15 +2,15 @@
 use strict;
 use warnings;
 use lib 'lib';
-use Op;
+use Lox;
 
 if (@ARGV > 1) {
-  print "Usage: op [script]\n";
+  print "Usage: lox [script]\n";
   exit 64;
 }
 elsif (@ARGV == 1) {
-  Op::run_file($ARGV[0]);
+  Lox::run_file($ARGV[0]);
 }
 else {
-  Op::run_prompt();
+  Lox::run_prompt();
 }
