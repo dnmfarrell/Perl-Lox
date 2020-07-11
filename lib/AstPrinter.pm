@@ -2,9 +2,6 @@ package AstPrinter;
 use strict;
 use warnings;
 use Moo;
-use Expr;
-use Token;
-use TokenType;
 
 sub print_expr {
   my ($self, $expr) = @_;

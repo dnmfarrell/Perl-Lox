@@ -8,8 +8,8 @@ use Moose;
 package Expr::Unary;
 use Moose;
 extends 'Expr';
-has method => (is => 'ro', isa => 'Token', required => 1);
-has left => (is => 'ro', isa => 'Expr', required => 1);
+has operator => (is => 'ro', isa => 'Token', required => 1);
+has right => (is => 'ro', isa => 'Expr', required => 1);
 
 sub accept {
   my ($self, $visitor) = @_;

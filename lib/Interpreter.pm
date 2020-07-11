@@ -8,8 +8,13 @@ use Moo;
 
 sub interpret {
   my ($self, $stmts) = @_;
-  for (@$stmts) {
-    $_->accept($self);
+  eval {
+    for (@$stmts) {
+      $_->accept($self);
+    }
+  };
+  if ($@) {
+    warn $@;
   }
 }
 

@@ -2,9 +2,9 @@ package Lox;
 use autodie;
 use strict;
 use warnings;
-#use AstPrinter;
-#use Interpreter;
-#use Parser;
+use AstPrinter;
+use Interpreter;
+use Parser;
 use Scanner;
 
 my $had_error = undef;
@@ -42,16 +42,16 @@ sub run {
   }
     else {
       $scanner->print;
-  #    my $parser = Parser->new(tokens => $scanner->{tokens});
-  #    my $stmts = $parser->parse;
-  #    if ($parser->errors->@*) {
-  #      error(@$_) for ($parser->{errors}->@*);
-  #    }
-  #    else {
-  #      #print AstPrinter->new->print_expr($stmts), "\n";
-  #      my $interpreter = Interpreter->new;
-  #      $interpreter->interpret($stmts);
-  #    }
+      my $parser = Parser->new(tokens => $scanner->{tokens});
+      my $stmts = $parser->parse;
+      if ($parser->errors->@*) {
+        error(@$_) for ($parser->{errors}->@*);
+      }
+      else {
+        #print AstPrinter->new->print_expr($stmts), "\n";
+        my $interpreter = Interpreter->new;
+        $interpreter->interpret($stmts);
+      }
     }
 }
 

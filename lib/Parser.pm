@@ -1,5 +1,6 @@
 package Parser;
 use Moose;
+use Expr;
 use Stmt;
 use TokenType;
 
@@ -45,14 +46,14 @@ sub statement {
 sub expression_statement {
   my $self = shift;
   my $value = $self->expression;
-  $self->consume(SEMICOLON, 'Expect newline after value.');
+  $self->consume(SEMICOLON, 'Expect ";" after value.');
   return Stmt::Expression->new(expression => $value);
 }
 
 sub print_statement {
   my $self = shift;
   my $value = $self->expression;
-  $self->consume(SEMICOLON, 'Expect newline after value.');
+  $self->consume(SEMICOLON, 'Expect ";" after value.');
   return Stmt::Print->new(expression => $value);
 }
 
@@ -112,14 +113,14 @@ sub multiplication {
 
 sub unary {
   my $self = shift;
-  my $expr = $self->primary;
-  while ($self->match(METHOD)) {
-    $expr = Expr::Unary->new({
-        left   => $expr,
-        method => $self->previous,
+  if ($self->match(BANG, MINUS)) {
+    my $expr = Expr::Unary->new({
+        operator => $self->previous,
+        right    => $self->unary,
     });
+    return $expr;
   }
-  return $expr;
+  return $self->primary;
 }
 
 sub primary {
@@ -188,6 +189,17 @@ sub error {
   my ($self, $token, $msg) = @_;
   push $self->errors->@*, [$token, $msg];
   die $msg;
+}
+
+sub synchronize {
+  my $self = shift;
+  $self->advance;
+  while (!$self->is_at_end) {
+    return if $self->previous->{type} == SEMICOLON;
+    my $next = $self->peek;
+    return if grep { $next == $_ } CLASS,FUN,VAR,FOR,IF,WHILE,PRINT,RETURN;
+    $self->advance;
+  }
 }
 
 1;

@@ -21,7 +21,7 @@ has expression => (is => 'ro', isa => 'Expr', required => 1);
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_expression_stmt($self);
+  return $visitor->visit_print_stmt($self);
 }
 
 1;
