@@ -40,38 +40,44 @@ sub scan_token {
     $self->chomp_eof($c);
     return;
   }
-  elsif ($c eq ' ') {
-    $self->chomp_whitespace($c);
-  }
-  elsif ($c eq "\n") {
-    $self->chomp_newline($c);
-  }
-  elsif ($c eq '"') {
-    $self->chomp_string($c);
-  }
   elsif ($c eq '(') {
-    $self->chomp_paren_open($c);
+    $self->new_token(lexeme=>$c, type=>LEFT_PAREN);
   }
   elsif ($c eq ')') {
-    $self->chomp_paren_close($c);
+    $self->new_token(lexeme=>$c, type=>RIGHT_PAREN);
   }
-  elsif ($c =~ /\d/) {
-    $self->chomp_number($c);
+  elsif ($c eq '{') {
+    $self->new_token(lexeme=>$c, type=>LEFT_BRACE);
+  }
+  elsif ($c eq '}') {
+    $self->new_token(lexeme=>$c, type=>RIGHT_BRACE);
+  }
+  elsif ($c eq ',') {
+    $self->new_token(lexeme=>$c, type=>COMMA);
   }
   elsif ($c eq '.') {
-    $self->chomp_method($c);
+    $self->new_token(lexeme=>$c, type=>DOT);
   }
-  elsif ($c =~ /[A-Z]/) {
-    $self->chomp_class($c);
+  elsif ($c eq '-') {
+    $self->new_token(lexeme=>$c, type=>MINUS);
   }
-  elsif ($c =~ /[a-z]/) {
-    $self->chomp_word($c);
+  elsif ($c eq '+') {
+    $self->new_token(lexeme=>$c, type=>PLUS);
+  }
+  elsif ($c eq ';') {
+    $self->new_token(lexeme=>$c, type=>SEMICOLON);
+  }
+  elsif ($c eq '*') {
+    $self->new_token(lexeme=>$c, type=>STAR);
   }
   elsif ($c eq '!') {
     $self->chomp_bang($c);
   }
+  elsif ($c eq '.') {
+    $self->chomp_method($c);
+  }
   elsif ($c eq '=') {
-    $self->chomp_equals($c);
+    $self->chomp_equal($c);
   }
   elsif ($c eq '>') {
     $self->chomp_greater($c);
@@ -79,22 +85,44 @@ sub scan_token {
   elsif ($c eq '<') {
     $self->chomp_less($c);
   }
-  elsif ($c eq '-') {
-    $self->chomp_minus($c);
-  }
-  elsif ($c eq '+') {
-    $self->chomp_plus($c);
-  }
   elsif ($c eq '/') {
     $self->chomp_slash($c);
   }
-  elsif ($c eq '*') {
-    $self->chomp_star($c);
+  elsif ($c eq ' ' || $c eq "\t") {
+    undef;
+  }
+  elsif ($c eq "\n") {
+    $self->{line}++;
+    $self->{column} = 0;
+  }
+  elsif ($c eq '"') {
+    $self->chomp_string($c);
+  }
+  elsif ($c =~ /\d/) {
+    $self->chomp_number($c);
+  }
+  elsif ($c =~ /\w/) {
+    $self->chomp_identifier($c);
   }
   else {
     $self->lex_error($c);
   }
 }
+
+sub is_at_end {
+  my $self = shift;
+  return $self->{current} >= length $self->{source};
+}
+
+sub match {
+  my ($self, $expected_char) = @_;
+  if (!$self->is_at_end && $self->peek eq $expected_char) {
+    $self->{current}++;
+    return 1;
+  }
+  return undef;
+}
+
 
 sub advance {
   my $self = shift;
@@ -109,57 +137,79 @@ sub peek {
 
 sub chomp_eof {
   my ($self, $c) = @_;
-  while (pop $self->{blocks}->@*) {
-    $self->new_token(lexeme=>$c, type=>BLOCK_END);
-  }
   $self->new_token(lexeme=>$c, type=>EOF);
   $self->{eof} = 1;
 }
 
-sub chomp_whitespace {
-  my ($self, $space) = @_;
-  $space .= $self->advance while ($self->peek eq ' ');
-  return $space;
+sub chomp_left_brace {
+  my ($self, $c) = @_;
 }
 
-sub chomp_paren_open {
+sub chomp_right_brace {
+  my ($self, $c) = @_;
+  $self->new_token(lexeme=>$c, type=>RIGHT_BRACE);
+}
+sub chomp_left_paren {
   my ($self, $c) = @_;
   $self->new_token(lexeme=>$c, type=>LEFT_PAREN);
 }
 
-sub chomp_paren_close {
+sub chomp_right_paren {
   my ($self, $c) = @_;
   $self->new_token(lexeme=>$c, type=>RIGHT_PAREN);
 }
 
-sub chomp_method {
+sub chomp_identifier {
   my ($self, $c) = @_;
   my $column = $self->{column};
   while ($self->peek =~ /[A-Za-z0-9_]/) {
     $c .= $self->advance;
   }
-  $self->new_token(lexeme=>$c, column=>$column, type=>METHOD);
-}
-
-sub chomp_word {
-  my ($self, $c) = @_;
-  my $column = $self->{column};
-  while ($self->peek =~ /[A-Za-z0-9_]/) {
-    $c .= $self->advance;
-  }
-
   my $type;
-  if ($c eq 'true') {
-    $type = TRUE;
+  if ($c eq 'and') {
+    $type = AND;
+  }
+  elsif ($c eq 'class') {
+    $type = CLASS;
+  }
+  elsif ($c eq 'else') {
+    $type = ELSE;
   }
   elsif ($c eq 'false') {
     $type = FALSE;
   }
+  elsif ($c eq 'for') {
+    $type = FOR;
+  }
+  elsif ($c eq 'if') {
+    $type = IF;
+  }
   elsif ($c eq 'nil') {
     $type = NIL;
   }
+  elsif ($c eq 'or') {
+    $type = OR;
+  }
   elsif ($c eq 'print') {
     $type = PRINT;
+  }
+  elsif ($c eq 'return') {
+    $type = RETURN;
+  }
+  elsif ($c eq 'super') {
+    $type = SUPER;
+  }
+  elsif ($c eq 'this') {
+    $type = THIS;
+  }
+  elsif ($c eq 'TRUE') {
+    $type = TRUE;
+  }
+  elsif ($c eq 'var') {
+    $type = VAR;
+  }
+  elsif ($c eq 'while') {
+    $type = WHILE;
   }
   else {
     $type = IDENTIFIER;
@@ -176,69 +226,16 @@ sub chomp_class {
   $self->new_token(lexeme=>$word, column=>$column, type=>CLASS);
 }
 
-sub chomp_newline {
-  my ($self, $c) = @_;
-  my $column = $self->{column};
-  $self->{column} = 1;
-
-  unless ($self->peek eq "\n") {
-    my $current_indent = $self->{blocks}[-1]//0;
-
-    my $indent = length $self->chomp_whitespace('');
-    if ($indent > $current_indent) {
-      push $self->{blocks}->@*, $indent;
-      push $self->{tokens}->@*, Token->new(
-        {
-          literal => undef,
-          lexeme  => '\n',
-          column  => $column,
-          line    => $self->{line},
-          type    => BLOCK_BEGIN,
-        });
-    }
-    elsif ($indent < $current_indent) {
-      do {
-        pop $self->{blocks}->@*;
-        push $self->{tokens}->@*, Token->new(
-          {
-            literal => undef,
-            lexeme  => '\n',
-            column  => $column,
-            line    => $self->{line},
-            type    => BLOCK_END,
-          });
-          $current_indent = $self->{blocks}[-1]//0;
-      } while ($indent < $current_indent);
-    }
-    else {
-      push $self->{tokens}->@*, Token->new(
-        {
-          literal => undef,
-          lexeme  => '\n',
-          column  => $column,
-          line    => $self->{line},
-          type    => STMNT_END,
-        });
-    }
-  }
-  $self->{line}++;
-}
 
 sub chomp_number {
   my ($self, $c) = @_;
   my $column = $self->{column};
-  my $type = INTEGER;
-  while ($self->peek =~ /\d/) {
+  $c .= $self->advance while ($self->peek =~ /\d/);
+  if ($self->peek eq '.') {
     $c .= $self->advance;
+    $c .= $self->advance while ($self->peek =~ /\d/);
   }
-  if ($self->peek(2) =~ /^\.\d$/) {
-    $type = FLOAT;
-    $c .= $self->advance;
-    while ($self->peek =~ /\d/) {
-      $c .= $self->advance;
-    }
-  }
-  $self->new_token(lexeme=>$c, type=>$type, literal=>$c, column=>$column);
+  $self->new_token(lexeme=>$c, type=>NUMBER, literal=>$c, column=>$column);
 }
 
 sub chomp_string {
@@ -259,7 +256,6 @@ sub chomp_string {
   $c .= $self->advance;
   $self->new_token(lexeme=>$c, type=>STRING, literal=>$word, column=>$column);
 }
-
 
 sub chomp_bang {
   my ($self, $c) = @_;
@@ -301,24 +297,16 @@ sub chomp_less {
   $self->new_token(lexeme => $c, type => $type);
 }
 
-sub chomp_minus {
-  my ($self, $c) = @_;
-  $self->new_token(lexeme => $c, type => MINUS);
-}
-
-sub chomp_plus {
-  my ($self, $c) = @_;
-  $self->new_token(lexeme => $c, type => PLUS);
-}
-
 sub chomp_slash {
   my ($self, $c) = @_;
-  $self->new_token(lexeme => $c, type => SLASH);
-}
-
-sub chomp_star {
-  my ($self, $c) = @_;
-  $self->new_token(lexeme => $c, type => STAR);
+  if ($self->peek eq '/') {
+    while ($self->peek ne "\n") {
+      $self->advance;
+    }
+  }
+  else {
+    $self->new_token(lexeme => $c, type => SLASH);
+  }
 }
 
 sub new_token {

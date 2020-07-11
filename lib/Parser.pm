@@ -45,14 +45,14 @@ sub statement {
 sub expression_statement {
   my $self = shift;
   my $value = $self->expression;
-  $self->consume(STMNT_END, 'Expect newline after value.');
+  $self->consume(SEMICOLON, 'Expect newline after value.');
   return Stmt::Expression->new(expression => $value);
 }
 
 sub print_statement {
   my $self = shift;
   my $value = $self->expression;
-  $self->consume(STMNT_END, 'Expect newline after value.');
+  $self->consume(SEMICOLON, 'Expect newline after value.');
   return Stmt::Print->new(expression => $value);
 }
 
@@ -133,7 +133,7 @@ sub primary {
   elsif ($self->match(NIL)) {
     return Expr::Literal->new(value => undef);
   }
-  elsif ($self->match(FLOAT, INTEGER, STRING)) {
+  elsif ($self->match(NUMBER, STRING)) {
     return Expr::Literal->new(value => $self->previous->{literal});
   }
   elsif ($self->match(LEFT_PAREN)) {

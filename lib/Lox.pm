@@ -2,11 +2,10 @@ package Lox;
 use autodie;
 use strict;
 use warnings;
-use AstPrinter;
-use Interpreter;
-use Parser;
+#use AstPrinter;
+#use Interpreter;
+#use Parser;
 use Scanner;
-use TokenType;
 
 my $had_error = undef;
 
@@ -41,30 +40,25 @@ sub run {
   elsif ($scanner->{errors}->@*) {
     error(@$_) for ($scanner->{errors}->@*);
   }
-  else {
-    $scanner->print;
-    my $parser = Parser->new(tokens => $scanner->{tokens});
-    my $stmts = $parser->parse;
-    if ($parser->errors->@*) {
-      error(@$_) for ($parser->{errors}->@*);
-    }
     else {
-      #print AstPrinter->new->print_expr($stmts), "\n";
-      my $interpreter = Interpreter->new;
-      $interpreter->interpret($stmts);
+      $scanner->print;
+  #    my $parser = Parser->new(tokens => $scanner->{tokens});
+  #    my $stmts = $parser->parse;
+  #    if ($parser->errors->@*) {
+  #      error(@$_) for ($parser->{errors}->@*);
+  #    }
+  #    else {
+  #      #print AstPrinter->new->print_expr($stmts), "\n";
+  #      my $interpreter = Interpreter->new;
+  #      $interpreter->interpret($stmts);
+  #    }
     }
-  }
 }
 
 sub error {
   my ($token, $message) = @_;
   $had_error = 1;
-  if ($token->{type} == EOF) {
-    report($token->{line}, " at end", $message);
-  }
-  else {
-    report($token->{line}, " at " . $token->{lexeme} . "'", $message);
-  }
+  report($token->{line}, " at " . $token->{lexeme} . "'", $message);
 }
 
 sub report {
