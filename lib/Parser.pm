@@ -9,6 +9,7 @@ sub new {
   my ($class, $args) = @_;
   return bless {
     tokens => ($args->{tokens} || die 'requires an arrayref of tokens'),
+    repl   => $args->{repl},
     errors => [],
     current=> 0,
   }, $class;
@@ -42,7 +43,7 @@ sub declaration {
 
 sub statement {
   my $self = shift;
-  if ($self->match(PRINT)) {
+  if ($self->match(PRINT) || $self->{repl}) {
     return $self->print_statement;
   }
   if ($self->match(LEFT_BRACE)) {

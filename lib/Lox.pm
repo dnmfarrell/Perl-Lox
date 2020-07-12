@@ -50,7 +50,7 @@ sub run {
       push $scanner->{tokens}->@*, $eof;
     }
     $scanner->print;
-    my $parser = Parser->new({tokens => $scanner->{tokens}});
+    my $parser = Parser->new({tokens => $scanner->{tokens}, repl => $is_repl});
     my $stmts = $parser->parse;
     if ($parser->errors->@*) {
       error(@$_) for ($parser->{errors}->@*);
