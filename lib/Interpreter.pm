@@ -2,20 +2,32 @@ package Interpreter;
 use feature 'say';
 use strict;
 use warnings;
+use Environment;
 use TokenType;
 use Scalar::Util 'looks_like_number';
 use Moo;
+
+has environment => (
+  is => 'rw',
+  isa => sub { ref $_ eq 'Environment' },
+  default => sub { Environment->new },
+);
 
 sub interpret {
   my ($self, $stmts) = @_;
   eval {
     for (@$stmts) {
-      $_->accept($self);
+      $self->execute($_);
     }
   };
   if ($@) {
     warn $@;
   }
+}
+
+sub execute {
+  my ($self, $stmt) = @_;
+  $stmt->accept($self);
 }
 
 sub visit_expression_stmt {
@@ -29,6 +41,37 @@ sub visit_print_stmt {
   my $value = $self->evaluate($stmt->expression);
   say $self->stringify($value);
   return undef;
+}
+
+sub visit_var_stmt {
+  my ($self, $stmt) = @_;
+  my $value = undef;
+  if ($stmt->initializer) {
+    $value = $self->evaluate($stmt->initializer);
+  }
+  $self->environment->define($stmt->name->{lexeme}, $value);
+  return undef;
+}
+
+sub visit_block_stmt {
+  my ($self, $stmt) = @_;
+  $self->execute_block(
+    $stmt->statements,
+    Environment->new({enclosing => $self->environment }));;
+
+  return undef;
+}
+
+sub execute_block {
+  my ($self, $statements, $environment) = @_;
+  my $prev_environment = $self->environment;
+  eval {
+    $self->environment($environment);
+    for my $stmt (@$statements) {
+      $self->execute($stmt);
+    }
+  };
+  $self->environment($prev_environment);
 }
 
 sub visit_literal {
@@ -51,6 +94,18 @@ sub visit_unary {
   else {
     return !$self->is_truthy($right);
   }
+}
+
+sub visit_assign {
+  my ($self, $expr) = @_;
+  my $value = $self->evaluate($expr->value);
+  $self->environment->assign($expr->name, $value);
+  return $value;
+}
+
+sub visit_variable {
+  my ($self, $expr) = @_;
+  return $self->environment->get($expr->name);
 }
 
 sub visit_binary {

@@ -202,7 +202,7 @@ sub chomp_identifier {
   elsif ($c eq 'this') {
     $type = THIS;
   }
-  elsif ($c eq 'TRUE') {
+  elsif ($c eq 'true') {
     $type = TRUE;
   }
   elsif ($c eq 'var') {

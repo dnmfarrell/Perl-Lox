@@ -1,9 +1,18 @@
 use strict;
 use warnings;
-use feature 'say';
 
 package Expr;
 use Moose;
+
+package Expr::Variable;
+use Moose;
+extends 'Expr';
+has name => (is => 'ro', isa => 'Token', required => 1);
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_variable($self);
+}
 
 package Expr::Unary;
 use Moose;
@@ -14,6 +23,17 @@ has right => (is => 'ro', isa => 'Expr', required => 1);
 sub accept {
   my ($self, $visitor) = @_;
   return $visitor->visit_unary($self);
+}
+
+package Expr::Assign;
+use Moose;
+extends 'Expr';
+has name => (is => 'ro', isa => 'Token', required => 1);
+has value => (is => 'ro', isa => 'Expr', required => 1);
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_assign($self);
 }
 
 package Expr::Binary;

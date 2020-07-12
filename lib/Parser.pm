@@ -30,9 +30,22 @@ sub parse {
   my $self = shift;
   my @statements;
   while (!$self->is_at_end) {
-    push @statements, $self->statement;
+    push @statements, $self->declaration;
   }
   return \@statements;
+}
+
+sub declaration {
+  my $self = shift;
+  my $dec = eval {
+    $self->match(VAR) ? $self->var_declaration : $self->statement;
+  };
+  unless ($@) {
+    return $dec;
+  }
+  warn $@;
+  $self->synchronize;
+  return undef;
 }
 
 sub statement {
@@ -40,7 +53,21 @@ sub statement {
   if ($self->match(PRINT)) {
     return $self->print_statement;
   }
+  if ($self->match(LEFT_BRACE)) {
+    return Stmt::Block->new({statements => $self->block});
+  }
   return $self->expression_statement;
+}
+
+sub var_declaration {
+  my $self = shift;
+  my $name = $self->consume(IDENTIFIER, "Expect variable name.");
+  my $init = undef;
+  if ($self->match(EQUAL)) {
+    $init = $self->expression;
+  }
+  $self->consume(SEMICOLON, 'Expect ";" after variable declaration.');
+  return Stmt::Var->new({name => $name, initializer => $init});
 }
 
 sub expression_statement {
@@ -50,6 +77,16 @@ sub expression_statement {
   return Stmt::Expression->new(expression => $value);
 }
 
+sub block {
+  my $self = shift;
+  my @statements;
+  while (!$self->check(RIGHT_BRACE) && !$self->is_at_end) {
+    push @statements, $self->declaration;
+  }
+  $self->consume(RIGHT_BRACE, "Expect '}' after block.");
+  return \@statements;
+}
+
 sub print_statement {
   my $self = shift;
   my $value = $self->expression;
@@ -57,7 +94,21 @@ sub print_statement {
   return Stmt::Print->new(expression => $value);
 }
 
-sub expression { shift->equality }
+sub assignment {
+  my $self = shift;
+  my $expr = $self->equality;
+  if ($self->match(EQUAL)) {
+    my $equals = $self->previous;
+    my $value = $self->assignment;
+    if ($expr->isa('Expr::Variable')) {
+      return Expr::Assign->new({name => $expr->name, value => $value});
+    }
+    $self->error($equals, 'Invalid assignment target');
+  }
+  return $expr;
+}
+
+sub expression { shift->assignment }
 
 sub equality {
   my $self = shift;
@@ -136,6 +187,9 @@ sub primary {
   }
   elsif ($self->match(NUMBER, STRING)) {
     return Expr::Literal->new(value => $self->previous->{literal});
+  }
+  elsif ($self->match(IDENTIFIER)) {
+    return Expr::Variable->new(name => $self->previous);
   }
   elsif ($self->match(LEFT_PAREN)) {
     my $expr = $self->expression;
