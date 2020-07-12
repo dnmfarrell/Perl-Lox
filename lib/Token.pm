@@ -1,7 +1,7 @@
 package Token;
 use strict;
 use warnings;
-use TokenType;
+use TokenType ();
 
 sub new {
   my ($class, $args) = @_;
@@ -19,7 +19,7 @@ sub to_string {
   return sprintf '%3d:%3d %-12s %s %s',
     $self->{line},
     $self->{column},
-    type($self->{type}),
+    TokenType::type($self->{type}),
     $self->{lexeme},
     $self->{literal};
 }
