@@ -6,6 +6,7 @@ use AstPrinter;
 use Interpreter;
 use Parser;
 use Scanner;
+use TokenType;
 
 my $had_error = undef;
 
@@ -24,14 +25,14 @@ sub run_prompt {
   print "Welcome to Lox version 0.01\n> ";
 
   while (my $line = <>) {
-    run($line);
+    run($line, 'repl');
     undef $had_error;
     print "> ";
   }
 }
 
 sub run {
-  my $source = shift;
+  my ($source, $is_repl) = @_;
   my $scanner = Scanner->new({source => $source});
   eval { $scanner->scan_tokens };
   if ($@) {
@@ -40,19 +41,26 @@ sub run {
   elsif ($scanner->{errors}->@*) {
     error(@$_) for ($scanner->{errors}->@*);
   }
-    else {
-      $scanner->print;
-      my $parser = Parser->new(tokens => $scanner->{tokens});
-      my $stmts = $parser->parse;
-      if ($parser->errors->@*) {
-        error(@$_) for ($parser->{errors}->@*);
+  else {
+    if ($is_repl) {
+      my $eof = pop $scanner->{tokens}->@*;
+      unless ($scanner->{tokens}[-1]->type == SEMICOLON) {
+        $scanner->new_token(lexeme=>';', type=>SEMICOLON);
       }
-      else {
-        #print AstPrinter->new->print_expr($stmts), "\n";
-        my $interpreter = Interpreter->new;
-        $interpreter->interpret($stmts);
-      }
+      push $scanner->{tokens}->@*, $eof;
     }
+    $scanner->print;
+    my $parser = Parser->new({tokens => $scanner->{tokens}});
+    my $stmts = $parser->parse;
+    if ($parser->errors->@*) {
+      error(@$_) for ($parser->{errors}->@*);
+    }
+    else {
+      #print AstPrinter->new->print_expr($stmts), "\n";
+      my $interpreter = Interpreter->new({});
+      $interpreter->interpret($stmts);
+    }
+  }
 }
 
 sub error {
