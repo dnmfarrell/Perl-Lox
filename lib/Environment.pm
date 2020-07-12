@@ -21,26 +21,27 @@ sub define {
 
 sub get {
   my ($self, $token) = @_;
-  if (my $v = $self->values->{$token->{lexeme}}) {
-    return $v;
+  if (exists $self->values->{$token->lexeme}) {
+    my $v = $self->values->{$token->lexeme};
+    die sprintf 'Uninitialized variable "%s"', $token->lexeme;
   }
   if ($self->enclosing) {
     return $self->enclosing->get($token);
   }
-  die sprintf 'Undefined variable "%s".', $token->{lexeme};
+  die sprintf 'Undefined variable "%s".', $token->lexeme;
 }
 
 sub assign {
   my ($self, $token, $value) = @_;
-  if (exists $self->values->{$token->{lexeme}}) {
-    $self->values->{$token->{lexeme}} = $value;
+  if (exists $self->values->{$token->lexeme}) {
+    $self->values->{$token->lexeme} = $value;
     return;
   }
 
   if ($self->enclosing) {
     return $self->enclosing->assign($token, $value);
   }
-  die sprintf 'Undefined variable "%s".', $token->{lexeme};
+  die sprintf 'Undefined variable "%s".', $token->lexeme;
 }
 
 1;
