@@ -171,7 +171,7 @@ sub are_equal {
 
 sub stringify {
   my ($self, $object) = @_;
-  return "$object";
+  return defined $object ? "$object" : 'nil';
 }
 
 1;
