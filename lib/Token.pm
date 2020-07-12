@@ -24,4 +24,10 @@ sub to_string {
     $self->{literal};
 }
 
+sub literal { $_[0]->{literal} }
+sub lexeme { $_[0]->{lexeme} }
+sub column { $_[0]->{column} }
+sub type { $_[0]->{type} }
+sub line { $_[0]->{line} }
+
 1;

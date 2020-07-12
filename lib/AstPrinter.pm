@@ -1,7 +1,8 @@
 package AstPrinter;
 use strict;
 use warnings;
-use Moo;
+
+sub new { bless {}, shift }
 
 sub print_expr {
   my ($self, $expr) = @_;

@@ -5,13 +5,16 @@ use warnings;
 use Environment;
 use TokenType;
 use Scalar::Util 'looks_like_number';
-use Moo;
 
-has environment => (
-  is => 'rw',
-  isa => sub { ref $_ eq 'Environment' },
-  default => sub { Environment->new },
-);
+sub new {
+  my ($class, $args) = @_;
+  return bless {
+    environment => Environment->new({}),
+    %$args,
+  }, $class;
+}
+
+sub environment :lvalue { $_[0]->{environment} }
 
 sub interpret {
   my ($self, $stmts) = @_;
@@ -66,12 +69,12 @@ sub execute_block {
   my ($self, $statements, $environment) = @_;
   my $prev_environment = $self->environment;
   eval {
-    $self->environment($environment);
+    $self->environment = $environment;
     for my $stmt (@$statements) {
       $self->execute($stmt);
     }
   };
-  $self->environment($prev_environment);
+  $self->environment = $prev_environment;
 }
 
 sub visit_literal {

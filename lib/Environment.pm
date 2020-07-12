@@ -1,18 +1,18 @@
 package Environment;
 use strict;
 use warnings;
-use Moo;
 
-has enclosing => (
-  is => 'ro',
-  isa => sub { $_->isa('Environment') },
-);
+sub new {
+  my ($class, $args) = @_;
+  return bless {
+    enclosing => undef,
+    values    => {},
+    %$args,
+  }, $class;
+}
 
-has values => (
-  is => 'rw',
-  isa => sub { ref $_ eq 'HASH' },
-  default => sub { +{} },
-);
+sub enclosing { $_[0]->{enclosing} }
+sub values { $_[0]->{values} }
 
 sub define {
   my ($self, $name, $value) = @_;

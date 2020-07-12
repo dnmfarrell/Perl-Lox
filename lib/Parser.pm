@@ -1,30 +1,22 @@
 package Parser;
-use Moose;
+use strict;
+use warnings;
 use Expr;
 use Stmt;
 use TokenType;
 
-has tokens => (
-  is       => 'ro',
-  isa      => 'ArrayRef',
-  required => 1,
-);
+sub new {
+  my ($class, $args) = @_;
+  return bless {
+    tokens => ($args->{tokens} || die 'requires an arrayref of tokens'),
+    errors => [],
+    current=> 0,
+  }, $class;
+}
 
-has errors => (
-  is       => 'rw',
-  isa      => 'ArrayRef',
-  default  => sub { [] },
-);
-
-has current => (
-  is      => 'rw',
-  isa     => 'Int',
-  default => 0,
-  traits  => ['Counter'],
-  handles => {
-    inc_current => 'inc',
-  },
-);
+sub tokens { $_[0]->{tokens} }
+sub errors :lvalue { $_[0]->{errors} }
+sub current :lvalue { $_[0]->{current} }
 
 sub parse {
   my $self = shift;
@@ -74,7 +66,7 @@ sub expression_statement {
   my $self = shift;
   my $value = $self->expression;
   $self->consume(SEMICOLON, 'Expect ";" after value.');
-  return Stmt::Expression->new(expression => $value);
+  return Stmt::Expression->new({expression => $value});
 }
 
 sub block {
@@ -91,7 +83,7 @@ sub print_statement {
   my $self = shift;
   my $value = $self->expression;
   $self->consume(SEMICOLON, 'Expect ";" after value.');
-  return Stmt::Print->new(expression => $value);
+  return Stmt::Print->new({expression => $value});
 }
 
 sub assignment {
@@ -177,24 +169,24 @@ sub unary {
 sub primary {
   my $self = shift;
   if ($self->match(FALSE)) {
-    return Expr::Literal->new(value => undef);
+    return Expr::Literal->new({value => undef});
   }
   elsif ($self->match(TRUE)) {
-    return Expr::Literal->new(value => 1);
+    return Expr::Literal->new({value => 1});
   }
   elsif ($self->match(NIL)) {
-    return Expr::Literal->new(value => undef);
+    return Expr::Literal->new({value => undef});
   }
   elsif ($self->match(NUMBER, STRING)) {
-    return Expr::Literal->new(value => $self->previous->{literal});
+    return Expr::Literal->new({value => $self->previous->{literal}});
   }
   elsif ($self->match(IDENTIFIER)) {
-    return Expr::Variable->new(name => $self->previous);
+    return Expr::Variable->new({name => $self->previous});
   }
   elsif ($self->match(LEFT_PAREN)) {
     my $expr = $self->expression;
     $self->consume(RIGHT_PAREN, 'Expect ")" after expression.');
-    return Expr::Grouping->new(expression => $expr);
+    return Expr::Grouping->new({expression => $expr});
   }
   $self->error($self->peek, 'expect expression');
 }
@@ -223,7 +215,7 @@ sub check {
 
 sub advance {
   my $self = shift;
-  $self->inc_current unless $self->is_at_end;
+  $self->current++ unless $self->is_at_end;
   return $self->previous;
 }
 

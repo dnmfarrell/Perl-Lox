@@ -2,12 +2,14 @@ use strict;
 use warnings;
 
 package Stmt;
-use Moose;
+sub new {
+  my ($class, $args) = @_;
+  return bless { %$args }, $class;
+}
 
 package Stmt::Block;
-use Moose;
-extends 'Stmt';
-has statements => (is => 'ro', isa => 'ArrayRef', required => 1);
+use parent -norequire, 'Stmt';
+sub statements { $_[0]->{statements} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -15,9 +17,8 @@ sub accept {
 }
 
 package Stmt::Expression;
-use Moose;
-extends 'Stmt';
-has expression => (is => 'ro', isa => 'Expr', required => 1);
+use parent -norequire, 'Stmt';
+sub expression { $_[0]->{expression} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -25,9 +26,8 @@ sub accept {
 }
 
 package Stmt::Print;
-use Moose;
-extends 'Stmt';
-has expression => (is => 'ro', isa => 'Expr', required => 1);
+use parent -norequire, 'Stmt';
+sub expression { $_[0]->{expression} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -35,10 +35,9 @@ sub accept {
 }
 
 package Stmt::Var;
-use Moose;
-extends 'Stmt';
-has name => (is => 'ro', isa => 'Token', required => 1);
-has initializer => (is => 'ro', isa => 'Expr', required => 1);
+use parent -norequire, 'Stmt';
+sub name { $_[0]->{name} }
+sub initializer { $_[0]->{initializer} }
 
 sub accept {
   my ($self, $visitor) = @_;

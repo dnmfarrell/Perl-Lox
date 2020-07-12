@@ -1,13 +1,16 @@
 use strict;
 use warnings;
-
 package Expr;
-use Moose;
+
+sub new {
+  my ($class, $args) = @_;
+  return bless { %$args }, $class;
+}
 
 package Expr::Variable;
-use Moose;
-extends 'Expr';
-has name => (is => 'ro', isa => 'Token', required => 1);
+use parent -norequire, 'Expr';
+
+sub name { $_[0]->{name} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -15,10 +18,9 @@ sub accept {
 }
 
 package Expr::Unary;
-use Moose;
-extends 'Expr';
-has operator => (is => 'ro', isa => 'Token', required => 1);
-has right => (is => 'ro', isa => 'Expr', required => 1);
+use parent -norequire, 'Expr';
+sub operator { $_[0]->{operator} }
+sub right { $_[0]->{right} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -26,10 +28,9 @@ sub accept {
 }
 
 package Expr::Assign;
-use Moose;
-extends 'Expr';
-has name => (is => 'ro', isa => 'Token', required => 1);
-has value => (is => 'ro', isa => 'Expr', required => 1);
+use parent -norequire, 'Expr';
+sub name { $_[0]->{name} }
+sub value { $_[0]->{value} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -37,11 +38,10 @@ sub accept {
 }
 
 package Expr::Binary;
-use Moose;
-extends 'Expr';
-has left => (is => 'ro', isa => 'Expr', required => 1);
-has operator => (is => 'ro', isa => 'Token', required => 1);
-has right => (is => 'ro', isa => 'Expr', required => 1);
+use parent -norequire, 'Expr';
+sub left { $_[0]->{left} }
+sub operator { $_[0]->{operator} }
+sub right { $_[0]->{right} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -49,9 +49,8 @@ sub accept {
 }
 
 package Expr::Grouping;
-use Moose;
-extends 'Expr';
-has expression => (is => 'ro', isa => 'Expr', required => 1);
+use parent -norequire, 'Expr';
+sub expression { $_[0]->{expression} }
 
 sub accept {
   my ($self, $visitor) = @_;
@@ -59,9 +58,8 @@ sub accept {
 }
 
 package Expr::Literal;
-use Moose;
-extends 'Expr';
-has value => (is => 'ro', isa => 'Value', required => 1);
+use parent -norequire, 'Expr';
+sub value { $_[0]->{value} }
 
 sub accept {
   my ($self, $visitor) = @_;
