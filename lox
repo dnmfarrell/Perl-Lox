@@ -2,15 +2,20 @@
 use strict;
 use warnings;
 use lib 'lib';
+use Getopt::Long 'GetOptions';
 use Lox;
+
+GetOptions(
+  'debug' => \my $debug,
+);
 
 if (@ARGV > 1) {
   print "Usage: lox [script]\n";
   exit 64;
 }
 elsif (@ARGV == 1) {
-  Lox::run_file($ARGV[0]);
+  Lox::run_file($ARGV[0], $debug);
 }
 else {
-  Lox::run_prompt();
+  Lox::run_prompt($debug);
 }

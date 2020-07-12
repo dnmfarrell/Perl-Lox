@@ -11,10 +11,10 @@ use TokenType;
 my $had_error = undef;
 
 sub run_file {
-  my ($path) = @_;
+  my ($path, $debug_mode) = @_;
   open my $fh, '<', $path;
   my $bytes = do { local $/; <$fh> };
-  run($bytes);
+  run($bytes, undef, $debug_mode);
 
   if ($had_error) {
     exit 65;
@@ -22,17 +22,18 @@ sub run_file {
 }
 
 sub run_prompt {
+  my ($debug_mode) = @_;
   print "Welcome to Lox version 0.01\n> ";
 
   while (my $line = <>) {
-    run($line, 'repl');
+    run($line, 'repl', $debug_mode);
     undef $had_error;
     print "> ";
   }
 }
 
 sub run {
-  my ($source, $is_repl) = @_;
+  my ($source, $is_repl, $debug_mode) = @_;
   my $scanner = Scanner->new({source => $source});
   eval { $scanner->scan_tokens };
   if ($@) {
@@ -49,7 +50,7 @@ sub run {
       }
       push $scanner->{tokens}->@*, $eof;
     }
-    $scanner->print;
+    $scanner->print if $debug_mode;
     my $parser = Parser->new({tokens => $scanner->{tokens}, repl => $is_repl});
     my $stmts = $parser->parse;
     if ($parser->errors->@*) {
