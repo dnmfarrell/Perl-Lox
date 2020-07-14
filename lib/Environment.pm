@@ -23,6 +23,7 @@ sub get {
   my ($self, $token) = @_;
   if (exists $self->values->{$token->lexeme}) {
     my $v = $self->values->{$token->lexeme};
+    return $v if defined $v;
     die sprintf 'Uninitialized variable "%s"', $token->lexeme;
   }
   if ($self->enclosing) {
