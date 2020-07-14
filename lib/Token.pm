@@ -30,4 +30,9 @@ sub column { $_[0]->{column} }
 sub type { $_[0]->{type} }
 sub line { $_[0]->{line} }
 
+sub accept {
+  my ($self, $caller) = @_;
+  $caller->visit_token($self);
+}
+
 1;

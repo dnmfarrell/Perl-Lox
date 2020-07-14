@@ -57,7 +57,7 @@ sub run {
       error(@$_) for ($parser->{errors}->@*);
     }
     else {
-      #print AstPrinter->new->print_expr($stmts), "\n";
+      print AstPrinter->new->print_tree($stmts), "\n" if $debug_mode;
       my $interpreter = Interpreter->new({});
       $interpreter->interpret($stmts);
     }
