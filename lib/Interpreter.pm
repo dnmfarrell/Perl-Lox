@@ -30,13 +30,42 @@ sub interpret {
 
 sub execute {
   my ($self, $stmt) = @_;
-  $stmt->accept($self);
+  $stmt->accept($self) unless $self->{breaking};
+}
+
+sub visit_break_stmt {
+  my ($self, $stmt) = @_;
+  $self->{breaking}++;
+  return undef;
 }
 
 sub visit_expression_stmt {
   my ($self, $stmt) = @_;
   $self->evaluate($stmt->expression);
   return undef;
+}
+
+sub visit_if_stmt {
+  my ($self, $stmt) = @_;
+  if ($self->is_truthy($self->evaluate($stmt->condition))) {
+    $self->execute($stmt->then_branch);
+  }
+  elsif ($stmt->else_branch) {
+    $self->execute($stmt->else_branch);
+  }
+}
+
+sub visit_logical {
+  my ($self, $expr) = @_;
+  my $left = $self->evaluate($expr->left);
+  if ($expr->operator->type == OR) {
+    return $left if $self->is_truthy($left);
+  }
+  else {
+    return $left if !$self->is_truthy($left);
+  }
+
+  return $self->evaluate($expr->right);
 }
 
 sub visit_print_stmt {
@@ -54,6 +83,15 @@ sub visit_var_stmt {
   }
   $self->environment->define($stmt->name->{lexeme}, $value);
   return undef;
+}
+
+sub visit_while_stmt {
+  my ($self, $stmt) = @_;
+  while ($self->is_truthy($self->evaluate($stmt->condition))) {
+    $self->execute($stmt->body);
+    last if $self->{breaking};
+  }
+  return undef $self->{breaking};
 }
 
 sub visit_block_stmt {
@@ -153,7 +191,7 @@ sub evaluate {
 
 sub is_truthy {
   my ($self, $value) = @_;
-  return !defined $value || $value eq 'false' ? 0 : 1;
+  return $value ? 1 : 0;
 }
 
 sub are_equal {

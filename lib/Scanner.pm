@@ -169,6 +169,9 @@ sub chomp_identifier {
   if ($c eq 'and') {
     $type = AND;
   }
+  elsif ($c eq 'break') {
+    $type = BREAK;
+  }
   elsif ($c eq 'class') {
     $type = CLASS;
   }

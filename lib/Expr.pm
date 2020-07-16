@@ -66,4 +66,15 @@ sub accept {
   return $visitor->visit_literal($self);
 }
 
+package Expr::Logical;
+use parent -norequire, 'Expr';
+sub left { $_[0]->{left} }
+sub operator { $_[0]->{operator} }
+sub right { $_[0]->{right} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_logical($self);
+}
+
 1;

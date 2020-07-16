@@ -43,13 +43,91 @@ sub declaration {
 
 sub statement {
   my $self = shift;
-  if ($self->match(PRINT) || $self->{repl}) {
-    return $self->print_statement;
+  if ($self->match(FOR)) {
+    return $self->for_statement;
+  }
+  if ($self->{looping} && $self->match(BREAK)) {
+    return $self->break_statement;
+  }
+  if ($self->match(IF)) {
+    return $self->if_statement;
+  }
+  if ($self->match(WHILE)) {
+    return $self->while_statement;
   }
   if ($self->match(LEFT_BRACE)) {
     return Stmt::Block->new({statements => $self->block});
   }
+  # must be last for repl condition
+  if ($self->match(PRINT) || $self->{repl}) {
+    return $self->print_statement;
+  }
   return $self->expression_statement;
+}
+
+sub for_statement {
+  my $self = shift;
+  $self->consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+  my $initializer;
+  if ($self->match(SEMICOLON)) {
+    $initializer = undef;
+  }
+  elsif ($self->match(VAR)) {
+    $initializer = $self->var_declaration;
+  }
+  else {
+    $initializer = $self->expression_statement;
+  }
+
+  my $condition = Expr::Literal->new({value => 1});
+  if (!$self->check(SEMICOLON)) {
+    $condition = $self->expression;
+  }
+  $self->consume(SEMICOLON, 'Expect ";" after loop condition');
+
+  my $increment = undef;
+  if (!$self->check(RIGHT_PAREN)) {
+    $increment = $self->expression;
+  }
+  $self->consume(RIGHT_PAREN, 'Expect ")" after for clauses');
+
+  my $body = $self->statement;
+  if ($increment) {
+    $body = Stmt::Block->new({statements =>
+        [$body, Stmt::Expression->new({expression => $increment})]});
+  }
+  $body = Stmt::While->new({condition => $condition, body => $body});
+
+  if ($initializer) {
+    $body = Stmt::Block->new({statements => [$initializer, $body]});
+  }
+
+  return $body;
+}
+
+sub if_statement {
+  my $self = shift;
+  $self->consume(LEFT_PAREN, "Expect '(' after 'if'.");
+  my $condition = $self->expression;
+  $self->consume(RIGHT_PAREN, "Expect ')' after condition.");
+
+  my $then_branch = $self->statement;
+  my $else_branch = undef;
+  if ($self->match(ELSE)) {
+    $else_branch = $self->statement;
+  }
+  return Stmt::If->new({
+      condition   => $condition,
+      then_branch => $then_branch,
+      else_branch => $else_branch,
+    });
+}
+
+sub break_statement {
+  my $self = shift;
+  $self->consume(SEMICOLON, 'Expect ";" after "break".');
+  return Stmt::Break->new({});
 }
 
 sub var_declaration {
@@ -61,6 +139,20 @@ sub var_declaration {
   }
   $self->consume(SEMICOLON, 'Expect ";" after variable declaration.');
   return Stmt::Var->new({name => $name, initializer => $init});
+}
+
+sub while_statement {
+  my $self = shift;
+  $self->consume(LEFT_PAREN, "Expect '(' after 'while'.");
+  my $condition = $self->expression;
+  $self->consume(RIGHT_PAREN, "Expect ')' after condition.");
+  $self->{looping}++;
+  my $while = Stmt::While->new({
+      condition => $condition,
+      body      => $self->statement,
+    });
+  $self->{looping}--;
+  return $while;
 }
 
 sub expression_statement {
@@ -89,7 +181,7 @@ sub print_statement {
 
 sub assignment {
   my $self = shift;
-  my $expr = $self->equality;
+  my $expr = $self->_or;
   if ($self->match(EQUAL)) {
     my $equals = $self->previous;
     my $value = $self->assignment;
@@ -97,6 +189,34 @@ sub assignment {
       return Expr::Assign->new({name => $expr->name, value => $value});
     }
     $self->error($equals, 'Invalid assignment target');
+  }
+  return $expr;
+}
+
+sub _or {
+  my $self = shift;
+  my $expr = $self->_and;
+
+  while ($self->match(OR)) {
+    $expr = Expr::Logical->new({
+        left => $expr,
+        operator => $self->previous,
+        right => $self->_and,
+      });
+  }
+  return $expr;
+}
+
+sub _and {
+  my $self = shift;
+  my $expr = $self->equality;
+
+  while ($self->match(AND)) {
+    $expr = Expr::Logical->new({
+        left => $expr,
+        operator => $self->previous,
+        right => $self->_and,
+      });
   }
   return $expr;
 }

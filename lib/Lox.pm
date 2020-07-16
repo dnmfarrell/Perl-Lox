@@ -67,7 +67,7 @@ sub run {
 sub error {
   my ($token, $message) = @_;
   $had_error = 1;
-  report($token->{line}, " at " . $token->{lexeme} . "'", $message);
+  report($token->{line}, "at '$token->{lexeme}'", $message);
 }
 
 sub report {
