@@ -19,6 +19,11 @@ sub visit_expression_stmt {
   return $self->parenthesize($stmt->expression);
 }
 
+sub visit_return_stmt {
+  my ($self, $stmt) = @_;
+  return $self->parenthesize('return', $stmt->value//'nil');
+}
+
 sub visit_print_stmt {
   my ($self, $stmt) = @_;
   return $self->parenthesize('print', $stmt->expression);
@@ -34,6 +39,13 @@ sub visit_var_stmt {
 sub visit_while_stmt {
   my ($self, $stmt) = @_;
   return $self->parenthesize('while', $stmt->condition, $stmt->body);
+}
+
+sub visit_function_stmt {
+  my ($self, $stmt) = @_;
+  my @expressions = ('fun', $stmt->name, '(');
+  push @expressions, $stmt->params->@* if $stmt->params->@*;
+  return $self->parenthesize(@expressions, ')', $stmt->body->@*);
 }
 
 sub visit_if_stmt {
@@ -61,6 +73,11 @@ sub visit_binary {
 sub visit_assign {
   my ($self, $expr) = @_;
   return $self->parenthesize($expr->name,'=',$expr->value);
+}
+
+sub visit_call {
+  my ($self, $expr) = @_;
+  return $self->parenthesize($expr->callee, $expr->arguments->@*);
 }
 
 sub visit_variable {

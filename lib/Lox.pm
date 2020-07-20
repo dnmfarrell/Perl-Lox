@@ -43,13 +43,13 @@ sub run {
     error(@$_) for ($scanner->{errors}->@*);
   }
   else {
-    if ($is_repl) {
-      my $eof = pop $scanner->{tokens}->@*;
-      unless ($scanner->{tokens}[-1]->type == SEMICOLON) {
-        $scanner->new_token(lexeme=>';', type=>SEMICOLON);
-      }
-      push $scanner->{tokens}->@*, $eof;
-    }
+    # if ($is_repl) {
+    #   my $eof = pop $scanner->{tokens}->@*;
+    #   unless ($scanner->{tokens}[-1]->type == SEMICOLON) {
+    #     $scanner->new_token(lexeme=>';', type=>SEMICOLON);
+    #   }
+    #   push $scanner->{tokens}->@*, $eof;
+    # }
     $scanner->print if $debug_mode;
     my $parser = Parser->new({tokens => $scanner->{tokens}, repl => $is_repl});
     my $stmts = $parser->parse;

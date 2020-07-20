@@ -48,6 +48,17 @@ sub accept {
   return $visitor->visit_binary($self);
 }
 
+package Expr::Call;
+use parent -norequire, 'Expr';
+sub arguments { $_[0]->{arguments} }
+sub callee { $_[0]->{callee} }
+sub paren { $_[0]->{paren} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_call($self);
+}
+
 package Expr::Grouping;
 use parent -norequire, 'Expr';
 sub expression { $_[0]->{expression} }

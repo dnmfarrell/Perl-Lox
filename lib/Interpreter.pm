@@ -2,19 +2,29 @@ package Interpreter;
 use feature 'say';
 use strict;
 use warnings;
+use Callable;
 use Environment;
+use Function;
 use TokenType;
 use Scalar::Util 'looks_like_number';
 
 sub new {
   my ($class, $args) = @_;
-  return bless {
+  my $interpreter = bless {
     environment => Environment->new({}),
+    globals     => Environment->new({}),
     %$args,
   }, $class;
+  $interpreter->globals->define('clock', Callable->new({
+    arity => 0,
+    call  => sub { time },
+  }));
+
+  return $interpreter;
 }
 
 sub environment :lvalue { $_[0]->{environment} }
+sub globals { $_[0]->{environment} }
 
 sub interpret {
   my ($self, $stmts) = @_;
@@ -55,6 +65,16 @@ sub visit_if_stmt {
   }
 }
 
+sub visit_function_stmt {
+  my ($self, $stmt) = @_;
+  my $function = Function->new({
+    declaration => $stmt,
+    environment => $self->environment,
+  });
+  $self->environment->define($stmt->name->lexeme, $function);
+  return undef;
+}
+
 sub visit_logical {
   my ($self, $expr) = @_;
   my $left = $self->evaluate($expr->left);
@@ -72,6 +92,15 @@ sub visit_print_stmt {
   my ($self, $stmt) = @_;
   my $value = $self->evaluate($stmt->expression);
   say $self->stringify($value);
+  return undef;
+}
+
+sub visit_return_stmt {
+  my ($self, $stmt) = @_;
+  if ($stmt->value) {
+    $self->{returning} = $self->evaluate($stmt->value);
+    die "return\n";
+  }
   return undef;
 }
 
@@ -113,11 +142,29 @@ sub execute_block {
     }
   };
   $self->environment = $prev_environment;
+  return delete $self->{returning};
 }
 
 sub visit_literal {
   my ($self, $expr) = @_;
   return $expr->value;
+}
+
+sub visit_call {
+  my ($self, $expr) = @_;
+  my $callee = $self->evaluate($expr->callee);
+  my @args;
+  for my $arg ($expr->arguments->@*) {
+    push @args, $self->evaluate($arg);
+  }
+  unless (ref $callee && $callee->isa('Callable')) {
+    die "Can only call functions and classes.";
+  }
+
+  if (@args!= $callee->arity) {
+    die sprintf 'Expected %d arguments but got %s',$callee->arity,scalar @args;
+  }
+  return $callee->call($self, \@args);
 }
 
 sub visit_grouping {

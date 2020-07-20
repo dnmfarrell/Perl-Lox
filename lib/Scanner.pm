@@ -184,6 +184,9 @@ sub chomp_identifier {
   elsif ($c eq 'for') {
     $type = FOR;
   }
+  elsif ($c eq 'fun') {
+    $type = FUN;
+  }
   elsif ($c eq 'if') {
     $type = IF;
   }

@@ -33,6 +33,17 @@ sub accept {
   return $visitor->visit_expression_stmt($self);
 }
 
+package Stmt::Function;
+use parent -norequire, 'Stmt';
+sub name   { $_[0]->{name} }
+sub params { $_[0]->{params} }
+sub body   { $_[0]->{body} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_function_stmt($self);
+}
+
 package Stmt::If;
 use parent -norequire, 'Stmt';
 sub condition   { $_[0]->{condition} }
@@ -51,6 +62,16 @@ sub expression { $_[0]->{expression} }
 sub accept {
   my ($self, $visitor) = @_;
   return $visitor->visit_print_stmt($self);
+}
+
+package Stmt::Return;
+use parent -norequire, 'Stmt';
+sub keyword { $_[0]->{keyword} }
+sub value { $_[0]->{value} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_return_stmt($self);
 }
 
 package Stmt::Var;
