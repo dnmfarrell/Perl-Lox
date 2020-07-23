@@ -9,10 +9,6 @@ use Environment;
 
 sub new {
   my ($class, $args) = @_;
-  croak 'Function::new requires a declaration Stmt::Function key/value pair'
-    unless $args->{declaration} &&
-           ref $args->{declaration} eq 'Stmt::Function';
-
   return bless { %$args }, $class;
 }
 

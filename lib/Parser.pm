@@ -32,7 +32,10 @@ sub parse {
 sub declaration {
   my $self = shift;
   my $dec = eval {
-    if ($self->match(FUN)) { $self->function('function') }
+    if ($self->check(FUN) && $self->check(IDENTIFIER, 1)) {
+      $self->advance;
+      $self->function_stmt('function');
+    }
     elsif ($self->match(VAR)) { $self->var_declaration }
     else { $self->statement }
   };
@@ -167,11 +170,29 @@ sub expression_statement {
   return Stmt::Expression->new({expression => $value});
 }
 
-sub function {
+sub function_stmt {
   my ($self, $kind) = @_;
   my $name = $self->consume(IDENTIFIER, "Expect $kind name.");
-  $self->consume(LEFT_PAREN, "Expect '(' after $kind name.");
+  my ($parameters, $body) = $self->parse_function($kind);
+  return Stmt::Function->new({
+      name   => $name,
+      params => $parameters,
+      body   => $body,
+    });
+}
 
+sub function_expr {
+  my ($self) = @_;
+  my ($parameters, $body) = $self->parse_function('anonymous function');
+  return Expr::Function->new({
+      params => $parameters,
+      body   => $body,
+    });
+}
+
+sub parse_function {
+  my ($self, $kind) = @_;
+  $self->consume(LEFT_PAREN, "Expect '(' after $kind declaration.");
   my @parameters;
   if (!$self->check(RIGHT_PAREN)) {
     do {
@@ -186,12 +207,7 @@ sub function {
 
   $self->consume(LEFT_BRACE, "Expect '{' before $kind body.");
   my $body = $self->block;
-
-  return Stmt::Function->new({
-      name   => $name,
-      params => \@parameters,
-      body   => $body,
-    });
+  return \@parameters, $body;
 }
 
 sub block {
@@ -381,7 +397,10 @@ sub primary {
     $self->consume(RIGHT_PAREN, 'Expect ")" after expression.');
     return Expr::Grouping->new({expression => $expr});
   }
-  $self->error($self->peek, 'expect expression');
+  elsif ($self->match(FUN)) {
+    return $self->function_expr;
+  }
+  $self->error($self->peek, 'Expect expression');
 }
 
 sub match {
@@ -402,8 +421,8 @@ sub consume {
 }
 
 sub check {
-  my ($self, $type) = @_;
-  return $self->is_at_end ? undef : $self->peek->{type} == $type;
+  my ($self, $type, $offset) = @_;
+  return $self->is_at_end ? undef : $self->peek($offset)->{type} == $type;
 }
 
 sub advance {
@@ -415,8 +434,8 @@ sub advance {
 sub is_at_end { shift->peek->{type} == EOF }
 
 sub peek {
-  my $self = shift;
-  return $self->tokens->[ $self->current ];
+  my ($self, $offset) = @_;
+  return $self->tokens->[ $self->current + ($offset//0) ];
 }
 
 sub previous {

@@ -75,6 +75,14 @@ sub visit_function_stmt {
   return undef;
 }
 
+sub visit_function {
+  my ($self, $expr) = @_;
+  return Function->new({
+    declaration => $expr,
+    environment => $self->environment,
+  });
+}
+
 sub visit_logical {
   my ($self, $expr) = @_;
   my $left = $self->evaluate($expr->left);

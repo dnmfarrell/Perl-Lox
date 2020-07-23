@@ -59,6 +59,16 @@ sub accept {
   return $visitor->visit_call($self);
 }
 
+package Expr::Function;
+use parent -norequire, 'Expr';
+sub params { $_[0]->{params} }
+sub body   { $_[0]->{body} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_function($self);
+}
+
 package Expr::Grouping;
 use parent -norequire, 'Expr';
 sub expression { $_[0]->{expression} }

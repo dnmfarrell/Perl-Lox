@@ -48,6 +48,13 @@ sub visit_function_stmt {
   return $self->parenthesize(@expressions, ')', $stmt->body->@*);
 }
 
+sub visit_function {
+  my ($self, $expr) = @_;
+  my @expressions = ('fun', '(');
+  push @expressions, $expr->params->@* if $expr->params->@*;
+  return $self->parenthesize(@expressions, ')', $expr->body->@*);
+}
+
 sub visit_if_stmt {
   my ($self, $stmt) = @_;
   my @expressions = ('if', $stmt->condition, $stmt->then_branch);
