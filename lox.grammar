@@ -1,8 +1,0 @@
-expression     → equality ;
-equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-comparison     → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
-addition       → multiplication ( ( "-" | "+" ) multiplication )* ;
-multiplication → unary ( ( "/" | "*" ) unary )* ;
-unary          → primary METHOD*;
-primary        → CLASS | IDENTIFIER | NUMBER | STRING | "false" | "true" | "nil"
-               | "(" expression ")" ;
