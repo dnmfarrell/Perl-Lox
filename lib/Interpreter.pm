@@ -13,6 +13,7 @@ sub new {
   my $interpreter = bless {
     environment => Environment->new({}),
     globals     => Environment->new({}),
+    locals      => {},
     %$args,
   }, $class;
   $interpreter->globals->define('clock', Callable->new({
@@ -25,6 +26,7 @@ sub new {
 
 sub environment :lvalue { $_[0]->{environment} }
 sub globals { $_[0]->{environment} }
+sub locals { $_[0]->{locals} }
 
 sub interpret {
   my ($self, $stmts) = @_;
@@ -41,6 +43,11 @@ sub interpret {
 sub execute {
   my ($self, $stmt) = @_;
   $stmt->accept($self) unless $self->{breaking};
+}
+
+sub resolve {
+  my ($self, $expr, $depth) = @_;
+  $self->locals->{"$expr"} = { expr=>$expr, distance=>$depth, accessed=>0 };
 }
 
 sub visit_break_stmt {
@@ -195,13 +202,37 @@ sub visit_unary {
 sub visit_assign {
   my ($self, $expr) = @_;
   my $value = $self->evaluate($expr->value);
-  $self->environment->assign($expr->name, $value);
+  my $distance = $self->look_up_variable_local($expr);
+  if (defined $distance) {
+    $self->environment->assign_at($distance, $expr->name, $value);
+  }
+  else {
+    $self->globals->assign($expr->name, $value);
+  }
   return $value;
 }
 
 sub visit_variable {
   my ($self, $expr) = @_;
-  return $self->environment->get($expr->name);
+  return $self->look_up_variable($expr->name, $expr);
+}
+
+sub look_up_variable_local {
+  my ($self, $expr) = @_;
+  my $local = $self->locals->{"$expr"};
+  if ($local) {
+    $local->{accessed}++;
+    return $local->{distance};
+  }
+  return undef;
+}
+
+sub look_up_variable {
+  my ($self, $name, $expr) = @_;
+  my $distance = $self->resolve_local($expr);
+  return $distance
+    ? $self->environment->get_at($distance, $name->lexeme)
+    : $self->globals->get($name);
 }
 
 sub visit_binary {

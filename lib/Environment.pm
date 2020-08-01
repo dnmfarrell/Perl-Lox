@@ -19,6 +19,24 @@ sub define {
   $self->values->{$name} = $value;
 }
 
+sub ancestor {
+  my ($self, $distance) = @_;
+  my $environment = $self;
+  for (1..$distance) {
+    $environment = $environment->enclosing;
+  }
+  return $environment;
+}
+
+sub get_at {
+  my ($self, $distance, $name) = @_;
+  return $self->ancestor($distance)->values->{$name};
+}
+
+sub assign_at {
+  my ($self, $distance, $name, $value) = @_;
+  $self->ancestor($distance)->values->put($name->lexeme, $value);
+}
 sub get {
   my ($self, $token) = @_;
   if (exists $self->values->{$token->lexeme}) {

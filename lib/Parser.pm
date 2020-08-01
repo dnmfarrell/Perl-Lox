@@ -1,7 +1,6 @@
 package Parser;
 use strict;
 use warnings;
-use Carp 'croak';
 use Expr;
 use Stmt;
 use TokenType;
@@ -42,7 +41,6 @@ sub declaration {
   unless ($@) {
     return $dec;
   }
-  warn $@;
   $self->synchronize;
   return undef;
 }
@@ -52,7 +50,7 @@ sub statement {
   if ($self->match(FOR)) {
     return $self->for_statement;
   }
-  if ($self->{looping} && $self->match(BREAK)) {
+  if ($self->match(BREAK)) {
     return $self->break_statement;
   }
   if ($self->match(IF)) {
@@ -134,6 +132,8 @@ sub if_statement {
 
 sub break_statement {
   my $self = shift;
+  $self->error($self->previous, 'Can only break out of loops.')
+    unless $self->{looping};
   $self->consume(SEMICOLON, 'Expect ";" after "break".');
   return Stmt::Break->new({});
 }
@@ -197,7 +197,7 @@ sub parse_function {
   if (!$self->check(RIGHT_PAREN)) {
     do {
       if (@parameters >= 255) {
-        $self->error($self->peek(), "Cannot have more than 255 parameters.");
+        $self->error($self->peek, "Cannot have more than 255 parameters.");
       }
 
       push @parameters, $self->consume(IDENTIFIER, "Expect parameter name.");
@@ -206,7 +206,9 @@ sub parse_function {
   $self->consume(RIGHT_PAREN, "Expect ')' after parameters.");
 
   $self->consume(LEFT_BRACE, "Expect '{' before $kind body.");
+  $self->{functioning}++;
   my $body = $self->block;
+  $self->{functioning}--;
   return \@parameters, $body;
 }
 
@@ -230,6 +232,8 @@ sub print_statement {
 sub return_statement {
   my $self = shift;
   my $keyword = $self->previous;
+  $self->error($keyword, 'Can only return from functions.')
+    unless $self->{functioning};
   my $value = $self->check(SEMICOLON) ? undef : $self->expression;
   $self->consume(SEMICOLON, 'Expect ";" after return value.');
   return Stmt::Return->new({keyword => $keyword, value => $value});
@@ -446,7 +450,7 @@ sub previous {
 sub error {
   my ($self, $token, $msg) = @_;
   push $self->errors->@*, [$token, $msg];
-  croak $msg;
+  die $msg;
 }
 
 sub synchronize {
