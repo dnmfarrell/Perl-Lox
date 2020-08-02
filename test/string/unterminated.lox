@@ -1,2 +1,2 @@
-// [line 2] Error: Unterminated string.
+// expect: [Line 3] Error at 'EOF': Unterminated string.
 "this string has no close quote

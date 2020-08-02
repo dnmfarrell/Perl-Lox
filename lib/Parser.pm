@@ -1,8 +1,11 @@
 package Parser;
 use strict;
 use warnings;
+use Bool;
 use Expr;
+use Nil;
 use Stmt;
+use String;
 use TokenType;
 
 sub new {
@@ -73,7 +76,7 @@ sub statement {
 
 sub for_statement {
   my $self = shift;
-  $self->consume(LEFT_PAREN, "Expect '(' after 'for'.");
+  $self->consume(LEFT_PAREN, "Expect '(' after 'for'");
 
   my $initializer;
   if ($self->match(SEMICOLON)) {
@@ -114,9 +117,9 @@ sub for_statement {
 
 sub if_statement {
   my $self = shift;
-  $self->consume(LEFT_PAREN, "Expect '(' after 'if'.");
+  $self->consume(LEFT_PAREN, "Expect '(' after 'if'");
   my $condition = $self->expression;
-  $self->consume(RIGHT_PAREN, "Expect ')' after condition.");
+  $self->consume(RIGHT_PAREN, "Expect ')' after condition");
 
   my $then_branch = $self->statement;
   my $else_branch = undef;
@@ -132,28 +135,28 @@ sub if_statement {
 
 sub break_statement {
   my $self = shift;
-  $self->error($self->previous, 'Can only break out of loops.')
+  $self->error($self->previous, 'Can only break out of loops')
     unless $self->{looping};
-  $self->consume(SEMICOLON, 'Expect ";" after "break".');
+  $self->consume(SEMICOLON, 'Expect ";" after "break"');
   return Stmt::Break->new({});
 }
 
 sub var_declaration {
   my $self = shift;
-  my $name = $self->consume(IDENTIFIER, "Expect variable name.");
+  my $name = $self->consume(IDENTIFIER, "Expect variable name");
   my $init = undef;
   if ($self->match(EQUAL)) {
     $init = $self->expression;
   }
-  $self->consume(SEMICOLON, 'Expect ";" after variable declaration.');
+  $self->consume(SEMICOLON, 'Expect ";" after variable declaration');
   return Stmt::Var->new({name => $name, initializer => $init});
 }
 
 sub while_statement {
   my $self = shift;
-  $self->consume(LEFT_PAREN, "Expect '(' after 'while'.");
+  $self->consume(LEFT_PAREN, "Expect '(' after 'while'");
   my $condition = $self->expression;
-  $self->consume(RIGHT_PAREN, "Expect ')' after condition.");
+  $self->consume(RIGHT_PAREN, "Expect ')' after condition");
   $self->{looping}++;
   my $while = Stmt::While->new({
       condition => $condition,
@@ -166,13 +169,13 @@ sub while_statement {
 sub expression_statement {
   my $self = shift;
   my $value = $self->expression;
-  $self->consume(SEMICOLON, 'Expect ";" after value.');
+  $self->consume(SEMICOLON, 'Expect \';\' after expression');
   return Stmt::Expression->new({expression => $value});
 }
 
 sub function_stmt {
   my ($self, $kind) = @_;
-  my $name = $self->consume(IDENTIFIER, "Expect $kind name.");
+  my $name = $self->consume(IDENTIFIER, "Expect $kind name");
   my ($parameters, $body) = $self->parse_function($kind);
   return Stmt::Function->new({
       name   => $name,
@@ -192,20 +195,20 @@ sub function_expr {
 
 sub parse_function {
   my ($self, $kind) = @_;
-  $self->consume(LEFT_PAREN, "Expect '(' after $kind declaration.");
+  $self->consume(LEFT_PAREN, "Expect '(' after $kind declaration");
   my @parameters;
   if (!$self->check(RIGHT_PAREN)) {
     do {
       if (@parameters >= 255) {
-        $self->error($self->peek, "Cannot have more than 255 parameters.");
+        $self->error($self->peek, "Cannot have more than 255 parameters");
       }
 
-      push @parameters, $self->consume(IDENTIFIER, "Expect parameter name.");
+      push @parameters, $self->consume(IDENTIFIER, "Expect parameter name");
     } while ($self->match(COMMA));
   }
-  $self->consume(RIGHT_PAREN, "Expect ')' after parameters.");
+  $self->consume(RIGHT_PAREN, "Expect ')' after parameters");
 
-  $self->consume(LEFT_BRACE, "Expect '{' before $kind body.");
+  $self->consume(LEFT_BRACE, "Expect '{' before $kind body");
   $self->{functioning}++;
   my $body = $self->block;
   $self->{functioning}--;
@@ -218,24 +221,24 @@ sub block {
   while (!$self->check(RIGHT_BRACE) && !$self->is_at_end) {
     push @statements, $self->declaration;
   }
-  $self->consume(RIGHT_BRACE, "Expect '}' after block.");
+  $self->consume(RIGHT_BRACE, "Expect '}' after block");
   return \@statements;
 }
 
 sub print_statement {
   my $self = shift;
   my $value = $self->expression;
-  $self->consume(SEMICOLON, 'Expect ";" after value.');
+  $self->consume(SEMICOLON, 'Expect ";" after value');
   return Stmt::Print->new({expression => $value});
 }
 
 sub return_statement {
   my $self = shift;
   my $keyword = $self->previous;
-  $self->error($keyword, 'Can only return from functions.')
+  $self->error($keyword, 'Can only return from functions')
     unless $self->{functioning};
   my $value = $self->check(SEMICOLON) ? undef : $self->expression;
-  $self->consume(SEMICOLON, 'Expect ";" after return value.');
+  $self->consume(SEMICOLON, 'Expect ";" after return value');
   return Stmt::Return->new({keyword => $keyword, value => $value});
 }
 
@@ -366,12 +369,12 @@ sub finish_call {
   my @args;
   if (!$self->check(RIGHT_PAREN)) {
     do {
-      $self->error($self->peek, 'Cannot have more than 255 arguments.')
+      $self->error($self->peek, 'Cannot have more than 255 arguments')
         if @args >= 255;
       push @args, $self->expression;
     } while ($self->match(COMMA));
   }
-  my $paren = $self->consume(RIGHT_PAREN, 'Expect ")" after arguments.');
+  my $paren = $self->consume(RIGHT_PAREN, 'Expect ")" after arguments');
   return Expr::Call->new({
       arguments => \@args,
       callee    => $callee,
@@ -382,23 +385,26 @@ sub finish_call {
 sub primary {
   my $self = shift;
   if ($self->match(FALSE)) {
-    return Expr::Literal->new({value => undef});
+    return Expr::Literal->new({value => False->new});
   }
   elsif ($self->match(TRUE)) {
-    return Expr::Literal->new({value => 1});
+    return Expr::Literal->new({value => True->new});
   }
   elsif ($self->match(NIL)) {
-    return Expr::Literal->new({value => undef});
+    return Expr::Literal->new({value => Nil->new});
   }
-  elsif ($self->match(NUMBER, STRING)) {
+  elsif ($self->match(NUMBER)) {
     return Expr::Literal->new({value => $self->previous->{literal}});
+  }
+  elsif ($self->match(STRING)) {
+    return Expr::Literal->new({value => String->new($self->previous->{literal})});
   }
   elsif ($self->match(IDENTIFIER)) {
     return Expr::Variable->new({name => $self->previous});
   }
   elsif ($self->match(LEFT_PAREN)) {
     my $expr = $self->expression;
-    $self->consume(RIGHT_PAREN, 'Expect ")" after expression.');
+    $self->consume(RIGHT_PAREN, 'Expect ")" after expression');
     return Expr::Grouping->new({expression => $expr});
   }
   elsif ($self->match(FUN)) {

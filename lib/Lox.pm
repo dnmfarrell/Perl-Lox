@@ -57,6 +57,12 @@ sub run {
   }
 }
 
+sub runtime_error {
+  my ($token, $message) = @_;
+  report($token->{line}, "at '$token->{lexeme}'", $message);
+  exit 65;
+}
+
 sub error {
   my ($token, $message) = @_;
   $had_error = 1;
@@ -65,7 +71,7 @@ sub error {
 
 sub report {
   my ($line, $where, $message) = @_;
-  printf STDERR "[Line %s] Error %s: %s\n", $line, $where, $message;
+  printf "[Line %s] Error %s: %s.\n", $line, $where, $message;
 }
 
 1;

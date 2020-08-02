@@ -1,2 +1,2 @@
-// [line 2] Error at end: Expect property name after '.'.
+// expect: [Line 3] Error at '': Expect ';' after expression.
 123.

@@ -14,7 +14,6 @@ sub new {
     line    => 1,
     blocks  => [],
     errors  => [],
-    eof     => undef,
   }, $class;
 }
 
@@ -27,8 +26,12 @@ sub print {
 
 sub scan_tokens {
   my $self = shift;
-  while (!$self->{eof}) {
+  while (!$self->is_at_end) {
     $self->scan_token;
+  }
+  # handle non-terminated input
+  unless ($self->{tokens}->@* && $self->{tokens}[-1]->type eq EOF) {
+    $self->chomp_eof('');
   }
 }
 
@@ -38,37 +41,36 @@ sub scan_token {
 
   if ($c eq '') {
     $self->chomp_eof($c);
-    return;
   }
   elsif ($c eq '(') {
-    $self->new_token(lexeme=>$c, type=>LEFT_PAREN);
+    $self->add_token(lexeme=>$c, type=>LEFT_PAREN);
   }
   elsif ($c eq ')') {
-    $self->new_token(lexeme=>$c, type=>RIGHT_PAREN);
+    $self->add_token(lexeme=>$c, type=>RIGHT_PAREN);
   }
   elsif ($c eq '{') {
-    $self->new_token(lexeme=>$c, type=>LEFT_BRACE);
+    $self->add_token(lexeme=>$c, type=>LEFT_BRACE);
   }
   elsif ($c eq '}') {
-    $self->new_token(lexeme=>$c, type=>RIGHT_BRACE);
+    $self->add_token(lexeme=>$c, type=>RIGHT_BRACE);
   }
   elsif ($c eq ',') {
-    $self->new_token(lexeme=>$c, type=>COMMA);
+    $self->add_token(lexeme=>$c, type=>COMMA);
   }
   elsif ($c eq '.') {
-    $self->new_token(lexeme=>$c, type=>DOT);
+    $self->add_token(lexeme=>$c, type=>DOT);
   }
   elsif ($c eq '-') {
-    $self->new_token(lexeme=>$c, type=>MINUS);
+    $self->add_token(lexeme=>$c, type=>MINUS);
   }
   elsif ($c eq '+') {
-    $self->new_token(lexeme=>$c, type=>PLUS);
+    $self->add_token(lexeme=>$c, type=>PLUS);
   }
   elsif ($c eq ';') {
-    $self->new_token(lexeme=>$c, type=>SEMICOLON);
+    $self->add_token(lexeme=>$c, type=>SEMICOLON);
   }
   elsif ($c eq '*') {
-    $self->new_token(lexeme=>$c, type=>STAR);
+    $self->add_token(lexeme=>$c, type=>STAR);
   }
   elsif ($c eq '!') {
     $self->chomp_bang($c);
@@ -137,8 +139,7 @@ sub peek {
 
 sub chomp_eof {
   my ($self, $c) = @_;
-  $self->new_token(lexeme=>$c, type=>EOF);
-  $self->{eof} = 1;
+  $self->add_token(lexeme=>$c, type=>EOF);
 }
 
 sub chomp_left_brace {
@@ -147,16 +148,16 @@ sub chomp_left_brace {
 
 sub chomp_right_brace {
   my ($self, $c) = @_;
-  $self->new_token(lexeme=>$c, type=>RIGHT_BRACE);
+  $self->add_token(lexeme=>$c, type=>RIGHT_BRACE);
 }
 sub chomp_left_paren {
   my ($self, $c) = @_;
-  $self->new_token(lexeme=>$c, type=>LEFT_PAREN);
+  $self->add_token(lexeme=>$c, type=>LEFT_PAREN);
 }
 
 sub chomp_right_paren {
   my ($self, $c) = @_;
-  $self->new_token(lexeme=>$c, type=>RIGHT_PAREN);
+  $self->add_token(lexeme=>$c, type=>RIGHT_PAREN);
 }
 
 sub chomp_identifier {
@@ -220,7 +221,7 @@ sub chomp_identifier {
   else {
     $type = IDENTIFIER;
   }
-  $self->new_token(lexeme=>$c, column=>$column, type=>$type);
+  $self->add_token(lexeme=>$c, column=>$column, type=>$type);
 }
 
 sub chomp_class {
@@ -229,7 +230,7 @@ sub chomp_class {
   while ($self->peek =~ /[\w\d]/) {
     $word .= $self->advance;
   }
-  $self->new_token(lexeme=>$word, column=>$column, type=>CLASS);
+  $self->add_token(lexeme=>$word, column=>$column, type=>CLASS);
 }
 
 
@@ -241,14 +242,15 @@ sub chomp_number {
     $c .= $self->advance;
     $c .= $self->advance while ($self->peek =~ /\d/);
   }
-  $self->new_token(lexeme=>$c, type=>NUMBER, literal=>$c, column=>$column);
+  $self->add_token(lexeme=>$c, type=>NUMBER, literal=>$c, column=>$column);
 }
 
 sub chomp_string {
   my ($self, $c) = @_;
   my $column = $self->{column};
-  my $word;
-  while ($self->peek ne '"') {
+  my $word = '';
+
+  while (!$self->is_at_end && $self->peek ne '"') {
     my $next = $self->advance;
     if ($next eq "\n") {
       $self->{line}++;
@@ -257,10 +259,13 @@ sub chomp_string {
       $next .= $self->advance;
     }
     $word .= $next;
-    $c    .= $next;
   }
-  $c .= $self->advance;
-  $self->new_token(lexeme=>$c, type=>STRING, literal=>$word, column=>$column);
+  if ($self->is_at_end) {
+    $self->lex_error('EOF', "Unterminated string");
+    return;
+  }
+  $self->advance;
+  $self->add_token(lexeme=>"\"$word\"", type=>STRING, literal=>$word, column=>$column);
 }
 
 sub chomp_bang {
@@ -270,7 +275,7 @@ sub chomp_bang {
     $c .= $self->advance;
     $type = BANG_EQUAL;
   }
-  $self->new_token(lexeme => $c, type => $type);
+  $self->add_token(lexeme => $c, type => $type);
 }
 
 sub chomp_equal {
@@ -280,7 +285,7 @@ sub chomp_equal {
     $c .= $self->advance;
     $type = EQUAL_EQUAL;
   }
-  $self->new_token(lexeme => $c, type => $type);
+  $self->add_token(lexeme => $c, type => $type);
 }
 
 sub chomp_greater {
@@ -290,7 +295,7 @@ sub chomp_greater {
     $c .= $self->advance;
     $type = GREATER_EQUAL;
   }
-  $self->new_token(lexeme => $c, type => $type);
+  $self->add_token(lexeme => $c, type => $type);
 }
 
 sub chomp_less {
@@ -300,22 +305,22 @@ sub chomp_less {
     $c .= $self->advance;
     $type = LESS_EQUAL;
   }
-  $self->new_token(lexeme => $c, type => $type);
+  $self->add_token(lexeme => $c, type => $type);
 }
 
 sub chomp_slash {
   my ($self, $c) = @_;
   if ($self->peek eq '/') {
-    while ($self->peek ne "\n") {
+    while (!$self->is_at_end && $self->peek ne "\n") {
       $self->advance;
     }
   }
   else {
-    $self->new_token(lexeme => $c, type => SLASH);
+    $self->add_token(lexeme => $c, type => SLASH);
   }
 }
 
-sub new_token {
+sub add_token {
   my ($self, %args) = @_;
   push $self->{tokens}->@*, Token->new(
     {
@@ -327,9 +332,15 @@ sub new_token {
 }
 
 sub lex_error {
-  my ($self, $c) = @_;
-  $self->new_token(lexeme=> $c, type=>ERROR);
-  push $self->{errors}->@*, [$self->{tokens}[-1], "unexpected character: $c"];
+  my ($self, $c, $msg) = @_;
+  $msg //= "unexpected character: $c";
+  my $t = Token->new({
+      literal => undef,
+      lexeme  => $c,
+      column  => $self->{column},
+      line    => $self->{line},
+      type    => ERROR});
+  Lox::error($t, $msg);
 }
 
 1;

@@ -1,2 +1,2 @@
-// [line 2] Error at 'fun': Expect expression.
+// expect: [Line 2] Error at 'foo': Expect '(' after anonymous function declaration.
 if (true) fun foo() {}

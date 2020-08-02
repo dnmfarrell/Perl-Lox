@@ -21,7 +21,7 @@ sub visit_expression_stmt {
 
 sub visit_return_stmt {
   my ($self, $stmt) = @_;
-  return $self->parenthesize('return', $stmt->value//'nil');
+  return $self->parenthesize('return', $stmt->value);
 }
 
 sub visit_print_stmt {
@@ -99,7 +99,7 @@ sub visit_grouping {
 
 sub visit_literal {
   my ($self, $expr) = @_;
-  return defined $expr->value ? $expr->value : 'nil';
+  return $expr->value;
 }
 
 sub visit_logical {

@@ -5,8 +5,7 @@ use warnings;
 sub new {
   my ($class, $args) = @_;
   return bless {
-    enclosing => undef,
-    values    => {},
+    values => {},
     %$args,
   }, $class;
 }
@@ -29,25 +28,26 @@ sub ancestor {
 }
 
 sub get_at {
-  my ($self, $distance, $name) = @_;
-  return $self->ancestor($distance)->values->{$name};
+  my ($self, $distance, $token) = @_;
+  return $self->ancestor($distance)->values->{$token->lexeme};
 }
 
 sub assign_at {
-  my ($self, $distance, $name, $value) = @_;
-  $self->ancestor($distance)->values->put($name->lexeme, $value);
+  my ($self, $distance, $token, $value) = @_;
+  $self->ancestor($distance)->values->{$token->lexeme} = $value;
 }
+
 sub get {
   my ($self, $token) = @_;
   if (exists $self->values->{$token->lexeme}) {
     my $v = $self->values->{$token->lexeme};
     return $v if defined $v;
-    die sprintf 'Uninitialized variable "%s"', $token->lexeme;
+    Lox::runtime_error($token, sprintf 'Uninitialized variable "%s"', $token->lexeme);
   }
   if ($self->enclosing) {
     return $self->enclosing->get($token);
   }
-  die sprintf 'Undefined variable "%s".', $token->lexeme;
+  Lox::runtime_error($token, sprintf 'Undefined variable "%s"', $token->lexeme);
 }
 
 sub assign {
@@ -60,7 +60,7 @@ sub assign {
   if ($self->enclosing) {
     return $self->enclosing->assign($token, $value);
   }
-  die sprintf 'Undefined variable "%s".', $token->lexeme;
+  Lox::runtime_error($token, sprintf 'Undefined variable "%s"', $token->lexeme);
 }
 
 1;

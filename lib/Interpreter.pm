@@ -2,17 +2,20 @@ package Interpreter;
 use feature 'say';
 use strict;
 use warnings;
+use Bool;
 use Callable;
 use Environment;
 use Function;
+use Nil;
 use TokenType;
 use Scalar::Util 'looks_like_number';
 
 sub new {
   my ($class, $args) = @_;
+  my $globals = Environment->new({});
   my $interpreter = bless {
-    environment => Environment->new({}),
-    globals     => Environment->new({}),
+    environment => $globals,
+    globals     => $globals,
     locals      => {},
     %$args,
   }, $class;
@@ -25,18 +28,13 @@ sub new {
 }
 
 sub environment :lvalue { $_[0]->{environment} }
-sub globals { $_[0]->{environment} }
+sub globals { $_[0]->{globals} }
 sub locals { $_[0]->{locals} }
 
 sub interpret {
   my ($self, $stmts) = @_;
-  eval {
-    for (@$stmts) {
-      $self->execute($_);
-    }
-  };
-  if ($@) {
-    warn $@;
+  for (@$stmts) {
+    $self->execute($_);
   }
 }
 
@@ -76,7 +74,7 @@ sub visit_function_stmt {
   my ($self, $stmt) = @_;
   my $function = Function->new({
     declaration => $stmt,
-    environment => $self->environment,
+    closure => $self->environment,
   });
   $self->environment->define($stmt->name->lexeme, $function);
   return undef;
@@ -86,7 +84,7 @@ sub visit_function {
   my ($self, $expr) = @_;
   return Function->new({
     declaration => $expr,
-    environment => $self->environment,
+    closure => $self->environment,
   });
 }
 
@@ -114,8 +112,8 @@ sub visit_return_stmt {
   my ($self, $stmt) = @_;
   if ($stmt->value) {
     $self->{returning} = $self->evaluate($stmt->value);
-    die "return\n";
   }
+  die "return\n";
   return undef;
 }
 
@@ -142,7 +140,7 @@ sub visit_block_stmt {
   my ($self, $stmt) = @_;
   $self->execute_block(
     $stmt->statements,
-    Environment->new({enclosing => $self->environment }));;
+    Environment->new({ enclosing => $self->environment }));
 
   return undef;
 }
@@ -150,14 +148,17 @@ sub visit_block_stmt {
 sub execute_block {
   my ($self, $statements, $environment) = @_;
   my $prev_environment = $self->environment;
-  eval {
-    $self->environment = $environment;
-    for my $stmt (@$statements) {
-      $self->execute($stmt);
+  $self->environment = $environment;
+  my $error;
+  for my $stmt (@$statements) {
+    eval { $self->execute($stmt) }; # so we can reset the env
+    if ($error = $@) {
+      last;
     }
-  };
+  }
   $self->environment = $prev_environment;
-  return delete $self->{returning};
+  die $error if $error;
+  return undef;
 }
 
 sub visit_literal {
@@ -173,13 +174,13 @@ sub visit_call {
     push @args, $self->evaluate($arg);
   }
   unless (ref $callee && $callee->isa('Callable')) {
-    die "Can only call functions and classes.";
+    die 'Can only call functions and classes';
   }
 
   if (@args!= $callee->arity) {
     die sprintf 'Expected %d arguments but got %s',$callee->arity,scalar @args;
   }
-  return $callee->call($self, \@args);
+  return $callee->call($self, \@args) // Nil->new;
 }
 
 sub visit_grouping {
@@ -195,7 +196,7 @@ sub visit_unary {
     return -$right;
   }
   else {
-    return !$self->is_truthy($right);
+    return !($self->is_truthy($right) ? True->new : False->new);
   }
 }
 
@@ -214,7 +215,7 @@ sub visit_assign {
 
 sub visit_variable {
   my ($self, $expr) = @_;
-  return $self->look_up_variable($expr->name, $expr);
+  return $self->look_up_variable($expr);
 }
 
 sub look_up_variable_local {
@@ -228,11 +229,11 @@ sub look_up_variable_local {
 }
 
 sub look_up_variable {
-  my ($self, $name, $expr) = @_;
-  my $distance = $self->resolve_local($expr);
-  return $distance
-    ? $self->environment->get_at($distance, $name->lexeme)
-    : $self->globals->get($name);
+  my ($self, $expr) = @_;
+  my $distance = $self->look_up_variable_local($expr);
+  return defined $distance
+    ? $self->environment->get_at($distance, $expr->name)
+    : $self->globals->get($expr->name);
 }
 
 sub visit_binary {
@@ -241,29 +242,42 @@ sub visit_binary {
   my $right = $self->evaluate($expr->right);
 
   my $type = $expr->operator->{type};
-  if ($type == BANG) {
-    return $self->are_equal($expr->left, $expr->right);
+  if ($type == EQUAL_EQUAL) {
+    return $self->are_equal($left, $right) ? True->new : False->new;
   }
   elsif ($type == BANG_EQUAL) {
-    return !$self->are_equal($expr->left, $expr->right);
+    return !$self->are_equal($left, $right) ? True->new : False->new;
   }
   elsif ($type == GREATER) {
-    return $left > $right;
+    return $left > $right ? True->new : False->new;
   }
   elsif ($type == GREATER_EQUAL) {
-    return $left >= $right;
+    return $left >= $right ? True->new : False->new;
   }
   elsif ($type == LESS) {
-    return $left < $right;
+    return $left < $right ? True->new : False->new;
   }
   elsif ($type == LESS_EQUAL) {
-    return $left <= $right;
+    return $left <= $right ? True->new : False->new;
+  }
+  elsif ($type == MINUS) {
+    return $left - $right;
   }
   elsif ($type == PLUS) {
-    return $left + $right;
+    if (ref $left || ref $right) {
+      if (ref $left eq ref $right) {
+        if (ref $left eq 'String') {
+          return String->new($left . $right);
+        }
+      }
+      Lox::runtime_error(
+        $expr->operator, 'Operands must be two numbers or two strings');
+    }
+    return $left + $right; # Lox numbers are the only non-object values
   }
   elsif ($type == SLASH) {
-    return $left / $right;
+    return $left / $right if $right;
+    return 'NaN';
   }
   elsif ($type == STAR) {
     return $left * $right;
@@ -277,25 +291,37 @@ sub evaluate {
 
 sub is_truthy {
   my ($self, $value) = @_;
-  return $value ? 1 : 0;
+  return !!$value if ref $value;
+  return 1;
 }
 
 sub are_equal {
   my ($self, $left, $right) = @_;
-  if (!defined $left) {
-    return !defined $right;
+  if (my $ltype = ref $left) {
+    if ($ltype eq ref $right) {
+      if ($ltype eq 'String') {
+        return $left eq $right;
+      }
+      elsif ($left->isa('Callable')) {
+        return $left eq $right; # does each reference point to the same thing
+      }
+      else {
+        return 1; # Nil, True, False
+      }
+    }
+    return undef;
   }
-  elsif (looks_like_number($left) && looks_like_number($right)) {
-    return $left == $right;
+  elsif (ref $right) {
+    return undef;
   }
   else {
-    return $left eq $right;
+    return $left == $right;
   }
 }
 
 sub stringify {
   my ($self, $object) = @_;
-  return defined $object ? "$object" : 'nil';
+  return "$object";
 }
 
 1;

@@ -48,9 +48,6 @@ sub visit_print_stmt {
 
 sub visit_return_stmt {
   my ($self, $stmt) = @_;
-  if ($self->current_function != FUNCTION) {
-    Lox::error($stmt->keyword, 'Cannot return from top-level code.');
-  }
   if ($stmt->value) {
     $self->resolve($stmt->value);
   }
@@ -71,7 +68,7 @@ sub resolve {
     $stmt_or_expr = [$stmt_or_expr];
   }
   $_->accept($self) for (@$stmt_or_expr);
-  $self->check_all_local_variables_used;
+  #$self->check_all_local_variables_used;
   return undef;
 }
 
@@ -79,7 +76,7 @@ sub check_all_local_variables_used {
   my $self = shift;
   for my $local (values $self->interpreter->locals->%*) {
     next if $local->{accessed};
-    Lox::error($local->{expr}->name, 'Local variable is never used.');
+    Lox::error($local->{expr}->name, 'Local variable is never used');
   }
 }
 
@@ -177,7 +174,7 @@ sub declare {
   my $scope = $self->scopes->[-1];
   if (exists $scope->{$name_token->lexeme}) {
     Lox::error($name_token,
-        "Variable with this name already declared in this scope.");
+        'Variable with this name already declared in this scope');
   }
 
   return $self->scopes->[-1]{$name_token->lexeme} = 0;
@@ -191,10 +188,12 @@ sub define {
 
 sub visit_variable {
   my ($self, $expr) = @_;
-  my $value = $self->scopes->@* && $self->scopes->[-1]{$expr->name->lexeme};
+  return undef unless $self->scopes->@*;
+
+  my $value = $self->scopes->[-1]{$expr->name->lexeme};
   if (defined $value && $value == 0) {
     Lox::error($expr->name,
-      'Cannot read local variable in its own initializer.');
+      'Cannot read local variable in its own initializer');
   }
   $self->resolve_local($expr, $expr->name);
   return undef;
