@@ -4,15 +4,13 @@ use warnings;
 use Bool;
 use overload
   '""' => sub { 'nil' },
-  '!'  => sub { True->new },
-  'bool' => sub { False->new },
-  fallback => 0;
+  '!'  => sub { $True },
+  'bool' => sub { $False },
+  fallback => 1;
 
-
-sub new {
-  my $class = shift;
-  my $undef = undef;
-  return bless \$undef, $class;
-}
+use Exporter 'import';
+my $u = undef;
+our $Nil = bless \$u, 'Nil';
+our @EXPORT = qw($Nil);
 
 1;

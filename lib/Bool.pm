@@ -3,19 +3,25 @@ use warnings;
 package True;
 use overload
   '""' => sub { 'true' },
-  '!'  => sub { False->new },
+  '!'  => sub { $False::False },
   'bool' => sub { 1 },
   fallback => 0;
 
-sub new { bless {}, shift }
+our $True = bless {}, 'True';
 
 package False;
 use overload
   '""' => sub { 'false' },
-  '!'  => sub { True->new },
+  '!'  => sub { $True::True },
   'bool' => sub { undef },
   fallback => 0;
 
-sub new { bless {}, shift }
+our $False = bless {}, 'False';
+
+package Bool;
+use Exporter 'import';
+our $True = $True::True;
+our $False = $False::False;
+our @EXPORT = qw($True $False);
 
 1;

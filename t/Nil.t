@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 use Nil;
 
-ok ref(my $nil = Nil->new), 'construct a new Nil obj';
-is "$nil", 'nil', 'stringifies to "nil"';
-ok $nil || 1, 'nil is falsey';
+is ref $Nil, 'Nil', 'Get Nil singleton';
+is "$Nil", 'nil', 'stringifies to "nil"';
+ok $Nil || 1, 'nil is falsey';
 done_testing;

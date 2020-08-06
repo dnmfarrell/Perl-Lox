@@ -180,7 +180,7 @@ sub visit_call {
   if (@args!= $callee->arity) {
     die sprintf 'Expected %d arguments but got %s',$callee->arity,scalar @args;
   }
-  return $callee->call($self, \@args) // Nil->new;
+  return $callee->call($self, \@args) // $Nil;
 }
 
 sub visit_grouping {
@@ -196,7 +196,7 @@ sub visit_unary {
     return -$right;
   }
   else {
-    return !($self->is_truthy($right) ? True->new : False->new);
+    return !($self->is_truthy($right) ? $True : $False);
   }
 }
 
@@ -243,22 +243,22 @@ sub visit_binary {
 
   my $type = $expr->operator->{type};
   if ($type == EQUAL_EQUAL) {
-    return $self->are_equal($left, $right) ? True->new : False->new;
+    return $self->are_equal($left, $right) ? $True : $False;
   }
   elsif ($type == BANG_EQUAL) {
-    return !$self->are_equal($left, $right) ? True->new : False->new;
+    return !$self->are_equal($left, $right) ? $True : $False;
   }
   elsif ($type == GREATER) {
-    return $left > $right ? True->new : False->new;
+    return $left > $right ? $True : $False;
   }
   elsif ($type == GREATER_EQUAL) {
-    return $left >= $right ? True->new : False->new;
+    return $left >= $right ? $True : $False;
   }
   elsif ($type == LESS) {
-    return $left < $right ? True->new : False->new;
+    return $left < $right ? $True : $False;
   }
   elsif ($type == LESS_EQUAL) {
-    return $left <= $right ? True->new : False->new;
+    return $left <= $right ? $True : $False;
   }
   elsif ($type == MINUS) {
     return $left - $right;
@@ -299,15 +299,7 @@ sub are_equal {
   my ($self, $left, $right) = @_;
   if (my $ltype = ref $left) {
     if ($ltype eq ref $right) {
-      if ($ltype eq 'String') {
-        return $left eq $right;
-      }
-      elsif ($left->isa('Callable')) {
-        return $left eq $right; # does each reference point to the same thing
-      }
-      else {
-        return 1; # Nil, True, False
-      }
+      return "$left" eq "$right";
     }
     return undef;
   }

@@ -4,8 +4,8 @@ use warnings;
 use Bool;
 use overload
   '""' => sub { '<native fn>' },
-  '!'  => sub { False->new },
-  'bool' => sub { True->new }, # only false and nil are untrue in Lox
+  '!'  => sub { $False },
+  'bool' => sub { $True }, # only false and nil are untrue in Lox
   fallback => 0;
 
 sub new {

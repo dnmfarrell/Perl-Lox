@@ -7,8 +7,8 @@ use Carp 'croak';
 use Environment;
 use overload
   '""' => sub { sprintf '<fn %s>',  $_[0]->declaration->name->lexeme },
-  '!'  => sub { False->new },
-  'bool' => sub { True->new }, # only false and nil are untrue in Lox
+  '!'  => sub { $False },
+  'bool' => sub { $True }, # only false and nil are untrue in Lox
   fallback => 0;
 
 sub new {

@@ -385,13 +385,13 @@ sub finish_call {
 sub primary {
   my $self = shift;
   if ($self->match(FALSE)) {
-    return Expr::Literal->new({value => False->new});
+    return Expr::Literal->new({value => $False});
   }
   elsif ($self->match(TRUE)) {
-    return Expr::Literal->new({value => True->new});
+    return Expr::Literal->new({value => $True});
   }
   elsif ($self->match(NIL)) {
-    return Expr::Literal->new({value => Nil->new});
+    return Expr::Literal->new({value => $Nil});
   }
   elsif ($self->match(NUMBER)) {
     return Expr::Literal->new({value => $self->previous->{literal}});

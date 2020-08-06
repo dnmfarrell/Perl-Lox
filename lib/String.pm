@@ -4,7 +4,7 @@ use warnings;
 use Bool;
 use overload
   '""' => sub { ${$_[0]} },
-  'bool' => sub { True->new },
+  'bool' => sub { $True },
   fallback => 1;
 
 sub new {
