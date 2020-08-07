@@ -21,7 +21,13 @@ my @UNSUPPORTED = qw(
   if/class_
   inheritance/
   limit/stack_overflow.lox
+  limit/loop_too_large.lox
+  limit/too_many_locals.lox
+  limit/too_many_constants.lox
+  limit/no_reuse_constants.lox
+  limit/too_many_upvalues.lox
   method/
+  number/trailing_dot.lox
   operator/equals_class.lox
   operator/not_class.lox
   operator/equals_method.lox
@@ -55,6 +61,7 @@ sub test_file {
   }
   my $output = join '', `./$LOX_PATH $filepath`;
   my $result = is($output, $expected, "Got expected output for $filepath");
+  #warn "$filepath\n" unless $expected;
   unless ($result) {
     print "TEST BEGIN\n${test_content}TEST END\n";
     exit 1;
