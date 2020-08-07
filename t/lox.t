@@ -8,36 +8,16 @@ my $LOX_PATH = 'lox';
 my $TEST_PATH = 'test';
 
 my @UNSUPPORTED = qw(
-  assignment/to_this.lox
   benchmark/
-  call/object.lox
-  class/
-  closure/close_over_method_parameter.lox
-  closure/reuse_closure_slot.lox
-  constructor/
+  class/inherit
+  class/local_inherit
   expressions/
-  field/
-  for/class_in_body.lox
-  if/class_
   inheritance/
-  limit/stack_overflow.lox
-  limit/loop_too_large.lox
-  limit/too_many_locals.lox
-  limit/too_many_constants.lox
-  limit/no_reuse_constants.lox
-  limit/too_many_upvalues.lox
-  method/
-  number/trailing_dot.lox
-  operator/equals_class.lox
-  operator/not_class.lox
+  limit/
   operator/equals_method.lox
   regression/394.lox
-  return/in_method.lox
   scanning/
   super/
-  this/
-  variable/local_from_method.lox
-  while/class_in_body.lox
 );
 
 my $iter = path($TEST_PATH)->iterator({ recurse => 1 });

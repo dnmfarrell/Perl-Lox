@@ -59,6 +59,16 @@ sub accept {
   return $visitor->visit_call_expr($self);
 }
 
+package Expr::Get;
+use parent -norequire, 'Expr';
+sub name { $_[0]->{name} }
+sub object { $_[0]->{object} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_get_expr($self);
+}
+
 package Expr::Function;
 use parent -norequire, 'Expr';
 sub params { $_[0]->{params} }
@@ -96,6 +106,27 @@ sub right { $_[0]->{right} }
 sub accept {
   my ($self, $visitor) = @_;
   return $visitor->visit_logical_expr($self);
+}
+
+package Expr::Set;
+use parent -norequire, 'Expr';
+sub name { $_[0]->{name} }
+sub object { $_[0]->{object} }
+sub value { $_[0]->{value} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_set_expr($self);
+}
+
+package Expr::This;
+use parent -norequire, 'Expr';
+sub keyword { $_[0]->{keyword} }
+sub name { $_[0]->keyword }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_this_expr($self);
 }
 
 1;

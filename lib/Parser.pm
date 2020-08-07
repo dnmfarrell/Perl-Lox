@@ -38,6 +38,9 @@ sub declaration {
       $self->advance;
       $self->function_stmt('function');
     }
+    elsif ($self->match(CLASS)) {
+      return $self->class_declaration;
+    }
     elsif ($self->match(VAR)) { $self->var_declaration }
     else { $self->statement }
   };
@@ -46,6 +49,18 @@ sub declaration {
   }
   $self->synchronize;
   return undef;
+}
+
+sub class_declaration {
+  my $self = shift;
+  my $name = $self->consume(IDENTIFIER, 'Expect class name');
+  $self->consume(LEFT_BRACE, 'Expect \'{\' before class body');
+  my @methods = ();
+  while (!$self->check(RIGHT_BRACE) && !$self->is_at_end) {
+    push @methods, $self->function_stmt('method');
+  }
+  $self->consume(RIGHT_BRACE, 'Expect \'}\' after class body');
+  return Stmt::Class->new({ name => $name, methods => \@methods });
 }
 
 sub statement {
@@ -248,8 +263,17 @@ sub assignment {
   if ($self->match(EQUAL)) {
     my $equals = $self->previous;
     my $value = $self->assignment;
+    # we parsed the left side THEN found an equals sign
+    # returns a new expr using the left side input
     if (ref $expr eq 'Expr::Variable') {
       return Expr::Assign->new({name => $expr->name, value => $value});
+    }
+    elsif (ref $expr eq 'Expr::Get') {
+      return Expr::Set->new({
+          object => $expr->object,
+          value  => $value,
+          name   => $expr->name,
+      });
     }
     $self->error($equals, 'Invalid assignment target');
   }
@@ -357,6 +381,12 @@ sub call {
     if ($self->match(LEFT_PAREN)) {
       $expr = $self->finish_call($expr);
     }
+    elsif ($self->match(DOT)) {
+      $expr = Expr::Get->new({
+       object => $expr,
+       name   => $self->consume(IDENTIFIER,'Expect property name after \'.\''),
+      });
+    }
     else {
       last;
     }
@@ -398,6 +428,9 @@ sub primary {
   }
   elsif ($self->match(STRING)) {
     return Expr::Literal->new({value => String->new($self->previous->{literal})});
+  }
+  elsif ($self->match(THIS)) {
+    return Expr::This->new({keyword => $self->previous});
   }
   elsif ($self->match(IDENTIFIER)) {
     return Expr::Variable->new({name => $self->previous});

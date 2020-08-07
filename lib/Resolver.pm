@@ -1,18 +1,20 @@
 package Resolver;
 use strict;
 use warnings;
-use enum qw(FUNCTION NONE);
+use enum qw(CLASS FUNCTION INITIALIZER METHOD NONE);
 
 sub new {
   my ($class, $interpreter) = @_;
   return bless {
     current_function => NONE,
+    current_class    => NONE,
     interpreter      => $interpreter,
     scopes           => [],
   }, $class;
 }
 
 sub current_function :lvalue { $_[0]->{current_function} }
+sub current_class :lvalue { $_[0]->{current_class} }
 sub interpreter { $_[0]->{interpreter} }
 sub scopes { $_[0]->{scopes} }
 
@@ -21,6 +23,23 @@ sub visit_block_stmt {
   $self->begin_scope;
   $self->resolve($stmt->statements);
   $self->end_scope;
+  return undef;
+}
+
+sub visit_class_stmt {
+  my ($self, $stmt) = @_;
+  my $enclosing_class = $self->current_class;
+  $self->current_class = CLASS;
+  $self->declare($stmt->name);
+  $self->define($stmt->name);
+  $self->begin_scope;
+  $self->scopes->[-1]->{this} = 1;
+  foreach my $method ($stmt->methods->@*) {
+    my $declaration = $method->name->lexeme eq 'init' ? INITIALIZER : METHOD;
+    $self->resolve_function($method, $declaration);
+  }
+  $self->end_scope;
+  $self->current_class = $enclosing_class;
   return undef;
 }
 
@@ -49,6 +68,9 @@ sub visit_print_stmt {
 sub visit_return_stmt {
   my ($self, $stmt) = @_;
   if ($stmt->value) {
+    if ($self->current_function == INITIALIZER) {
+      Lox::error($stmt->keyword, 'Cannot return a value from an initializer');
+    }
     $self->resolve($stmt->value);
   }
   return undef;
@@ -59,6 +81,12 @@ sub visit_function_stmt {
   $self->declare($stmt->name);
   $self->define($stmt->name);
   $self->resolve_function($stmt, FUNCTION);
+  return undef;
+}
+
+sub visit_get_expr {
+  my ($self, $expr) = @_;
+  $self->resolve($expr->object);
   return undef;
 }
 
@@ -161,6 +189,13 @@ sub visit_logical_expr {
   return undef;
 }
 
+sub visit_set_expr {
+  my ($self, $expr) = @_;
+  $self->resolve($expr->value);
+  $self->resolve($expr->object);
+  return undef;
+}
+
 sub visit_unary_expr {
   my ($self, $expr) = @_;
   $self->resolve($expr->right);
@@ -184,6 +219,15 @@ sub define {
   my ($self, $name_token) = @_;
   return undef unless $self->scopes->@*;
   return $self->scopes->[-1]{$name_token->lexeme} = 1;
+}
+
+sub visit_this_expr {
+  my ($self, $expr) = @_;
+  if ($self->current_class == NONE) {
+    Lox::error($expr->keyword, 'Cannot use \'this\' outside of a class');
+  }
+  $self->resolve_local($expr, $expr->keyword);
+  return undef;
 }
 
 sub visit_variable_expr {

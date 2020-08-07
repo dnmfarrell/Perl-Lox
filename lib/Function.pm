@@ -18,18 +18,33 @@ sub new {
 
 sub declaration { $_[0]->{declaration} }
 sub closure { $_[0]->{closure} }
-sub arity { scalar $_[0]->declaration->params->@* }
+sub arity { scalar $_[0]->params->@* }
+sub params { $_[0]->declaration->params }
+sub body { $_[0]->declaration->body }
 
 sub call {
   my ($self, $interpreter, $args) = @_;
   my $environment = Environment->new({ enclosing => $self->closure });
-  for (my $i = 0; $i < $self->declaration->params->@*; $i++) {
-    $environment->define($self->declaration->params->[$i]->lexeme,$args->[$i]);
+  for (my $i = 0; $i < $self->params->@*; $i++) {
+    $environment->define($self->params->[$i]->lexeme,$args->[$i]);
   }
   my $sub = sub {
-    $interpreter->execute_block($self->declaration->body, $environment);
+    $interpreter->execute_block($self->body, $environment);
   };
-  return $self->call_catch_return($interpreter, $sub);
+  my $retval = $self->call_catch_return($interpreter, $sub);
+  return $self->{is_initializer} ? $self->closure->get_at(0, 'this')
+                                 : $retval;
+}
+
+sub bind {
+  my ($self, $instance) = @_;
+  my $environment = Environment->new({ enclosing => $self->closure });
+  $environment->define('this', $instance);
+  return Function->new({
+      is_initializer => $self->{is_initializer},
+      declaration    => $self->declaration,
+      closure        => $environment,
+  });
 }
 
 1;

@@ -14,6 +14,11 @@ sub visit_break_stmt {
   return $self->parenthesize('break');
 }
 
+sub visit_class_stmt {
+  my ($self, $stmt) = @_;
+  return $self->parenthesize('class', $stmt->name, $stmt->methods->@*);
+}
+
 sub visit_expression_stmt {
   my ($self, $stmt) = @_;
   return $self->parenthesize($stmt->expression);
@@ -31,7 +36,7 @@ sub visit_print_stmt {
 
 sub visit_var_stmt {
   my ($self, $stmt) = @_;
-  my @expressions = ($stmt->name, '=');
+  my @expressions = ('var', $stmt->name, '=');
   push @expressions, $stmt->initializer if $stmt->initializer;
   return $self->parenthesize(@expressions);
 }
@@ -87,9 +92,24 @@ sub visit_call_expr {
   return $self->parenthesize($expr->callee, $expr->arguments->@*);
 }
 
+sub visit_set_expr {
+  my ($self, $expr) = @_;
+  return $self->parenthesize($expr->object, '.', $expr->name, '(', $expr->value, ')');
+}
+
+sub visit_this_expr {
+  my ($self, $expr) = @_;
+  return $expr->keyword->lexeme;
+}
+
 sub visit_variable_expr {
   my ($self, $expr) = @_;
   return $expr->name->lexeme;
+}
+
+sub visit_get_expr {
+  my ($self, $expr) = @_;
+  return $self->parenthesize($expr->object, '.', $expr->name, '()');
 }
 
 sub visit_grouping_expr {

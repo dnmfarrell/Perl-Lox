@@ -6,6 +6,7 @@ use Bool;
 use Callable;
 use Environment;
 use Function;
+use Lox::Class;
 use Nil;
 use TokenType;
 use Scalar::Util 'looks_like_number';
@@ -54,6 +55,23 @@ sub visit_break_stmt {
   return undef;
 }
 
+sub visit_class_stmt {
+  my ($self, $stmt) = @_;
+  $self->environment->define($stmt->name->lexeme, undef);
+  my %methods;
+  for my $method ($stmt->methods->@*) {
+    my $function = Function->new({
+      is_initializer => $method->name->lexeme eq 'init',
+      declaration    => $method,
+      closure        => $self->environment,
+    });
+    $methods{$method->name->lexeme} = $function;
+  }
+  my $klass = Lox::Class->new({name=>$stmt->name->lexeme, methods=>\%methods});
+  $self->environment->assign($stmt->name, $klass);
+  return undef;
+}
+
 sub visit_expression_stmt {
   my ($self, $stmt) = @_;
   $self->evaluate($stmt->expression);
@@ -99,6 +117,23 @@ sub visit_logical_expr {
   }
 
   return $self->evaluate($expr->right);
+}
+
+sub visit_set_expr {
+  my ($self, $expr) = @_;
+  my $object = $self->evaluate($expr->object);
+  if (ref $object ne 'Lox::Instance') {
+    Lox::runtime_error($expr->name, "Only instances have fields");
+  }
+
+  my $value = $self->evaluate($expr->value);
+  $object->set($expr->name, $value);
+  return $value
+}
+
+sub visit_this_expr {
+  my ($self, $expr) = @_;
+  return $self->look_up_variable($expr);
 }
 
 sub visit_print_stmt {
@@ -184,6 +219,16 @@ sub visit_call_expr {
   return $callee->call($self, \@args) // $Nil;
 }
 
+sub visit_get_expr {
+  my ($self, $expr) = @_;
+  my $object = $self->evaluate($expr->object);
+
+  if (ref $object eq 'Lox::Instance') {
+    return $object->get($expr->name);
+  }
+  Lox::runtime_error($expr->name, 'Only instances have properties');
+}
+
 sub visit_grouping_expr {
   my ($self, $expr) = @_;
   return $self->evaluate($expr->expression);
@@ -236,7 +281,7 @@ sub look_up_variable {
   my ($self, $expr) = @_;
   my $distance = $self->look_up_variable_local($expr);
   return defined $distance
-    ? $self->environment->get_at($distance, $expr->name)
+    ? $self->environment->get_at($distance, $expr->name->lexeme)
     : $self->globals->get($expr->name);
 }
 

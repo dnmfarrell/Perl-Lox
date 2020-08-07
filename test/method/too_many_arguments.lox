@@ -256,5 +256,5 @@
      a, // 253
      a, // 254
      a, // 255
-     a); // expect: [Line 260] Error at 'a': Cannot have more than 255 arguments.
+     a); // expect: [Line 259] Error at 'a': Cannot have more than 255 arguments.
 }

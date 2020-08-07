@@ -238,7 +238,7 @@ sub chomp_number {
   my ($self, $c) = @_;
   my $column = $self->{column};
   $c .= $self->advance while ($self->peek =~ /\d/);
-  if ($self->peek eq '.') {
+  if ($self->peek eq '.' && $self->peek(2) =~ /\d/) {
     $c .= $self->advance;
     $c .= $self->advance while ($self->peek =~ /\d/);
   }

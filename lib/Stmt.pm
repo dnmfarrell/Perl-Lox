@@ -24,6 +24,16 @@ sub accept {
   return $visitor->visit_block_stmt($self);
 }
 
+package Stmt::Class;
+use parent -norequire, 'Stmt';
+sub name    { $_[0]->{name} }
+sub methods { $_[0]->{methods} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_class_stmt($self);
+}
+
 package Stmt::Expression;
 use parent -norequire, 'Stmt';
 sub expression { $_[0]->{expression} }

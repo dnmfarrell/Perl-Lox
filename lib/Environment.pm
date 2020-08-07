@@ -28,8 +28,8 @@ sub ancestor {
 }
 
 sub get_at {
-  my ($self, $distance, $token) = @_;
-  return $self->ancestor($distance)->values->{$token->lexeme};
+  my ($self, $distance, $token_lexeme) = @_;
+  return $self->ancestor($distance)->values->{$token_lexeme};
 }
 
 sub assign_at {
@@ -42,12 +42,12 @@ sub get {
   if (exists $self->values->{$token->lexeme}) {
     my $v = $self->values->{$token->lexeme};
     return $v if defined $v;
-    Lox::runtime_error($token, sprintf 'Uninitialized variable "%s"', $token->lexeme);
+    Lox::runtime_error($token, sprintf 'Uninitialized variable \'%s\'', $token->lexeme);
   }
   if ($self->enclosing) {
     return $self->enclosing->get($token);
   }
-  Lox::runtime_error($token, sprintf 'Undefined variable "%s"', $token->lexeme);
+  Lox::runtime_error($token, sprintf 'Undefined variable \'%s\'', $token->lexeme);
 }
 
 sub assign {
