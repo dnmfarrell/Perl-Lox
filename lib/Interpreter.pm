@@ -194,6 +194,9 @@ sub visit_unary_expr {
   my $right = $self->evaluate($expr->right);
 
   if ($expr->operator->{type} == MINUS) {
+    # numbers are not objects
+    Lox::runtime_error($expr->operator, 'Operand must be a number')
+      if ref $right;
     return -$right;
   }
   else {
@@ -250,25 +253,36 @@ sub visit_binary_expr {
     return !$self->are_equal($left, $right) ? $True : $False;
   }
   elsif ($type == GREATER) {
+    # numbers are not objects
+    Lox::runtime_error($expr->operator, 'Operands must be two numbers')
+      if ref $left || ref $right;
     return $left > $right ? $True : $False;
   }
   elsif ($type == GREATER_EQUAL) {
+    Lox::runtime_error($expr->operator, 'Operands must be two numbers')
+      if ref $left || ref $right;
     return $left >= $right ? $True : $False;
   }
   elsif ($type == LESS) {
+    Lox::runtime_error($expr->operator, 'Operands must be two numbers')
+      if ref $left || ref $right;
     return $left < $right ? $True : $False;
   }
   elsif ($type == LESS_EQUAL) {
+    Lox::runtime_error($expr->operator, 'Operands must be two numbers')
+      if ref $left || ref $right;
     return $left <= $right ? $True : $False;
   }
   elsif ($type == MINUS) {
+    Lox::runtime_error($expr->operator, 'Operands must be two numbers')
+      if ref $left || ref $right;
     return $left - $right;
   }
   elsif ($type == PLUS) {
     if (ref $left || ref $right) {
       if (ref $left eq ref $right) {
         if (ref $left eq 'String') {
-          return String->new($left . $right);
+          return String->new("$left" . "$right");
         }
       }
       Lox::runtime_error(
@@ -277,10 +291,13 @@ sub visit_binary_expr {
     return $left + $right; # Lox numbers are the only non-object values
   }
   elsif ($type == SLASH) {
-    return $left / $right if $right;
-    return 'NaN';
+    Lox::runtime_error($expr->operator, 'Operands must be two numbers')
+      if ref $left || ref $right;
+    return $right ? $left / $right : 'NaN';
   }
   elsif ($type == STAR) {
+    Lox::runtime_error($expr->operator, 'Operands must be two numbers')
+      if ref $left || ref $right;
     return $left * $right;
   }
 }

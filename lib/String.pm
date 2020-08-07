@@ -5,7 +5,8 @@ use Bool;
 use overload
   '""' => sub { ${$_[0]} },
   'bool' => sub { $True },
-  fallback => 1;
+  '!' => sub { $False },
+  fallback => 0;
 
 sub new {
   my ($class, $string) = @_;
