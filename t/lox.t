@@ -45,7 +45,7 @@ done_testing;
 
 sub test_file {
   my $filepath = shift;;
-  warn "testing $filepath\n";
+  #warn "testing $filepath\n";
   open my $fh, '<', $filepath or die "Couldn't open $filepath $!";
   my $expected = '';
   my $test_content = '';
