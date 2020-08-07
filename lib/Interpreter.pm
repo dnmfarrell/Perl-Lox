@@ -80,7 +80,7 @@ sub visit_function_stmt {
   return undef;
 }
 
-sub visit_function {
+sub visit_function_expr {
   my ($self, $expr) = @_;
   return Function->new({
     declaration => $expr,
@@ -88,7 +88,7 @@ sub visit_function {
   });
 }
 
-sub visit_logical {
+sub visit_logical_expr {
   my ($self, $expr) = @_;
   my $left = $self->evaluate($expr->left);
   if ($expr->operator->type == OR) {
@@ -161,12 +161,12 @@ sub execute_block {
   return undef;
 }
 
-sub visit_literal {
+sub visit_literal_expr {
   my ($self, $expr) = @_;
   return $expr->value;
 }
 
-sub visit_call {
+sub visit_call_expr {
   my ($self, $expr) = @_;
   my $callee = $self->evaluate($expr->callee);
   my @args;
@@ -184,12 +184,12 @@ sub visit_call {
   return $callee->call($self, \@args) // $Nil;
 }
 
-sub visit_grouping {
+sub visit_grouping_expr {
   my ($self, $expr) = @_;
   return $self->evaluate($expr->expression);
 }
 
-sub visit_unary {
+sub visit_unary_expr {
   my ($self, $expr) = @_;
   my $right = $self->evaluate($expr->right);
 
@@ -201,7 +201,7 @@ sub visit_unary {
   }
 }
 
-sub visit_assign {
+sub visit_assign_expr {
   my ($self, $expr) = @_;
   my $value = $self->evaluate($expr->value);
   my $distance = $self->look_up_variable_local($expr);
@@ -214,7 +214,7 @@ sub visit_assign {
   return $value;
 }
 
-sub visit_variable {
+sub visit_variable_expr {
   my ($self, $expr) = @_;
   return $self->look_up_variable($expr);
 }
@@ -237,7 +237,7 @@ sub look_up_variable {
     : $self->globals->get($expr->name);
 }
 
-sub visit_binary {
+sub visit_binary_expr {
   my ($self, $expr) = @_;
   my $left = $self->evaluate($expr->left);
   my $right = $self->evaluate($expr->right);

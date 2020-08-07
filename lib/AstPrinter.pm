@@ -48,7 +48,7 @@ sub visit_function_stmt {
   return $self->parenthesize(@expressions, ')', $stmt->body->@*);
 }
 
-sub visit_function {
+sub visit_function_expr {
   my ($self, $expr) = @_;
   my @expressions = ('fun', '(');
   push @expressions, $expr->params->@* if $expr->params->@*;
@@ -67,42 +67,42 @@ sub visit_block_stmt {
   return $self->parenthesize($stmt->statements->@*);
 }
 
-sub visit_unary {
+sub visit_unary_expr {
   my ($self, $expr) = @_;
   return $self->parenthesize($expr->operator,$expr->right);
 }
 
-sub visit_binary {
+sub visit_binary_expr {
   my ($self, $expr) = @_;
   return $self->parenthesize($expr->left,$expr->operator,$expr->right);
 }
 
-sub visit_assign {
+sub visit_assign_expr {
   my ($self, $expr) = @_;
   return $self->parenthesize($expr->name,'=',$expr->value);
 }
 
-sub visit_call {
+sub visit_call_expr {
   my ($self, $expr) = @_;
   return $self->parenthesize($expr->callee, $expr->arguments->@*);
 }
 
-sub visit_variable {
+sub visit_variable_expr {
   my ($self, $expr) = @_;
   return $expr->name->lexeme;
 }
 
-sub visit_grouping {
+sub visit_grouping_expr {
   my ($self, $expr) = @_;
   return $self->parenthesize($expr->expression);
 }
 
-sub visit_literal {
+sub visit_literal_expr {
   my ($self, $expr) = @_;
   return $expr->value;
 }
 
-sub visit_logical {
+sub visit_logical_expr {
   my ($self, $expr) = @_;
   return $self->visit_binary($expr);
 }

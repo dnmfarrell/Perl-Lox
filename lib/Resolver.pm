@@ -123,21 +123,21 @@ sub visit_while_stmt {
   return undef;
 }
 
-sub visit_assign {
+sub visit_assign_expr {
   my ($self, $expr) = @_;
   $self->resolve($expr->value);
   $self->resolve_local($expr, $expr->name);
   return undef;
 }
 
-sub visit_binary {
+sub visit_binary_expr {
   my ($self, $expr) = @_;
   $self->resolve($expr->left);
   $self->resolve($expr->right);
   return undef;
 }
 
-sub visit_call {
+sub visit_call_expr {
   my ($self, $expr) = @_;
   $self->resolve($expr->callee);
   for my $argument ($expr->arguments->@*) {
@@ -146,22 +146,22 @@ sub visit_call {
   return undef;
 }
 
-sub visit_grouping {
+sub visit_grouping_expr {
   my ($self, $expr) = @_;
   $self->resolve($expr->expression);
   return undef;
 }
 
-sub visit_literal { undef }
+sub visit_literal_expr { undef }
 
-sub visit_logical {
+sub visit_logical_expr {
   my ($self, $expr) = @_;
   $self->resolve($expr->left);
   $self->resolve($expr->right);
   return undef;
 }
 
-sub visit_unary {
+sub visit_unary_expr {
   my ($self, $expr) = @_;
   $self->resolve($expr->right);
   return undef;
@@ -186,7 +186,7 @@ sub define {
   return $self->scopes->[-1]{$name_token->lexeme} = 1;
 }
 
-sub visit_variable {
+sub visit_variable_expr {
   my ($self, $expr) = @_;
   return undef unless $self->scopes->@*;
 

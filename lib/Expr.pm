@@ -14,7 +14,7 @@ sub name { $_[0]->{name} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_variable($self);
+  return $visitor->visit_variable_expr($self);
 }
 
 package Expr::Unary;
@@ -24,7 +24,7 @@ sub right { $_[0]->{right} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_unary($self);
+  return $visitor->visit_unary_expr($self);
 }
 
 package Expr::Assign;
@@ -34,7 +34,7 @@ sub value { $_[0]->{value} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_assign($self);
+  return $visitor->visit_assign_expr($self);
 }
 
 package Expr::Binary;
@@ -45,7 +45,7 @@ sub right { $_[0]->{right} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_binary($self);
+  return $visitor->visit_binary_expr($self);
 }
 
 package Expr::Call;
@@ -56,7 +56,7 @@ sub paren { $_[0]->{paren} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_call($self);
+  return $visitor->visit_call_expr($self);
 }
 
 package Expr::Function;
@@ -66,7 +66,7 @@ sub body   { $_[0]->{body} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_function($self);
+  return $visitor->visit_function_expr($self);
 }
 
 package Expr::Grouping;
@@ -75,7 +75,7 @@ sub expression { $_[0]->{expression} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_grouping($self);
+  return $visitor->visit_grouping_expr($self);
 }
 
 package Expr::Literal;
@@ -84,7 +84,7 @@ sub value { $_[0]->{value} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_literal($self);
+  return $visitor->visit_literal_expr($self);
 }
 
 package Expr::Logical;
@@ -95,7 +95,7 @@ sub right { $_[0]->{right} }
 
 sub accept {
   my ($self, $visitor) = @_;
-  return $visitor->visit_logical($self);
+  return $visitor->visit_logical_expr($self);
 }
 
 1;
