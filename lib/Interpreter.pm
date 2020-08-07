@@ -174,11 +174,12 @@ sub visit_call {
     push @args, $self->evaluate($arg);
   }
   unless (ref $callee && $callee->isa('Callable')) {
-    die 'Can only call functions and classes';
+    Lox::runtime_error($expr->paren, 'Can only call functions and classes');
   }
 
   if (@args!= $callee->arity) {
-    die sprintf 'Expected %d arguments but got %s',$callee->arity,scalar @args;
+    Lox::runtime_error($expr->paren,
+      sprintf 'Expected %d arguments but got %s',$callee->arity,scalar @args);
   }
   return $callee->call($self, \@args) // $Nil;
 }
