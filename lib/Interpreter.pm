@@ -57,7 +57,20 @@ sub visit_break_stmt {
 
 sub visit_class_stmt {
   my ($self, $stmt) = @_;
+  my $superclass = undef;
+  if (my $sc = $stmt->superclass) {
+    $superclass = $self->evaluate($sc);
+    unless (ref $superclass eq 'Lox::Class') {
+      Lox::runtime_error($sc->name, 'Superclass must be a class');
+    }
+  }
   $self->environment->define($stmt->name->lexeme, undef);
+
+  if ($superclass) {
+    $self->environment = Environment->new({ enclosing => $self->environment });
+    $self->environment->define('super', $superclass);
+  }
+
   my %methods;
   for my $method ($stmt->methods->@*) {
     my $function = Function->new({
@@ -67,7 +80,16 @@ sub visit_class_stmt {
     });
     $methods{$method->name->lexeme} = $function;
   }
-  my $klass = Lox::Class->new({name=>$stmt->name->lexeme, methods=>\%methods});
+  my $klass = Lox::Class->new({
+      superclass => $superclass,
+      methods    => \%methods,
+      name       => $stmt->name->lexeme,
+  });
+
+  if ($superclass) {
+    $self->environment = $self->environment->enclosing;
+  }
+
   $self->environment->assign($stmt->name, $klass);
   return undef;
 }
@@ -129,6 +151,19 @@ sub visit_set_expr {
   my $value = $self->evaluate($expr->value);
   $object->set($expr->name, $value);
   return $value
+}
+
+sub visit_super_expr {
+  my ($self, $expr) = @_;
+  my $distance = $self->look_up_variable_local($expr);
+  my $superclass = $self->environment->get_at($distance, 'super');
+  my $object = $self->environment->get_at($distance - 1, 'this');
+  my $method = $superclass->find_method($expr->method->lexeme);
+  unless ($method) {
+    Lox::runtime_error($expr->method,
+      sprintf 'Undefined property \'%s\'', $expr->method->lexeme);
+  }
+  return $method->bind($object);
 }
 
 sub visit_this_expr {

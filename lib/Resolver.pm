@@ -1,7 +1,7 @@
 package Resolver;
 use strict;
 use warnings;
-use enum qw(CLASS FUNCTION INITIALIZER METHOD NONE);
+use enum qw(CLASS FUNCTION INITIALIZER METHOD NONE SUBCLASS);
 
 sub new {
   my ($class, $interpreter) = @_;
@@ -32,6 +32,17 @@ sub visit_class_stmt {
   $self->current_class = CLASS;
   $self->declare($stmt->name);
   $self->define($stmt->name);
+
+  if (my $sc = $stmt->superclass) {
+    if($stmt->name->lexeme eq $sc->name->lexeme) {
+      Lox::error($sc->name, 'A class cannot inherit from itself');
+    }
+    $self->current_class = SUBCLASS;
+    $self->resolve($sc);
+    $self->begin_scope();
+    $self->scopes->[-1]{super} = 1;
+  }
+
   $self->begin_scope;
   $self->scopes->[-1]->{this} = 1;
   foreach my $method ($stmt->methods->@*) {
@@ -39,6 +50,7 @@ sub visit_class_stmt {
     $self->resolve_function($method, $declaration);
   }
   $self->end_scope;
+  $self->end_scope if $stmt->superclass;
   $self->current_class = $enclosing_class;
   return undef;
 }
@@ -219,6 +231,19 @@ sub define {
   my ($self, $name_token) = @_;
   return undef unless $self->scopes->@*;
   return $self->scopes->[-1]{$name_token->lexeme} = 1;
+}
+
+sub visit_super_expr {
+  my ($self, $expr) = @_;
+  if ($self->current_class == NONE) {
+    Lox::error($expr->keyword, 'Cannot use \'super\' outside of a class');
+  }
+  elsif ($self->current_class != SUBCLASS) {
+    Lox::error($expr->keyword,
+      'Cannot use \'super\' in a class with no superclass');
+  }
+  $self->resolve_local($expr, $expr->keyword);
+  return undef;
 }
 
 sub visit_this_expr {

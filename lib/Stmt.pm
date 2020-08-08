@@ -26,8 +26,9 @@ sub accept {
 
 package Stmt::Class;
 use parent -norequire, 'Stmt';
-sub name    { $_[0]->{name} }
-sub methods { $_[0]->{methods} }
+sub name       { $_[0]->{name} }
+sub methods    { $_[0]->{methods} }
+sub superclass { $_[0]->{superclass} }
 
 sub accept {
   my ($self, $visitor) = @_;

@@ -16,9 +16,9 @@ sub new {
   return bless { %$args }, $class;
 }
 
-sub name { $_[0]->{name} }
-
-sub methods { $_[0]->{methods} }
+sub superclass { $_[0]->{superclass} }
+sub methods    { $_[0]->{methods} }
+sub name       { $_[0]->{name} }
 
 sub call {
   my ($self, $interpreter, @args) = @_;
@@ -40,6 +40,9 @@ sub find_method {
   my ($self, $lexeme) = @_;
   if (my $method = $self->methods->{$lexeme}) {
     return $method;
+  }
+  elsif ($self->superclass) {
+    return $self->superclass->find_method($lexeme);
   }
   return undef;
 }

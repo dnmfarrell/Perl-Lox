@@ -9,15 +9,11 @@ my $TEST_PATH = 'test';
 
 my @UNSUPPORTED = qw(
   benchmark/
-  class/inherit
-  class/local_inherit
   expressions/
-  inheritance/
   limit/
   operator/equals_method.lox
   regression/394.lox
   scanning/
-  super/
 );
 
 my $iter = path($TEST_PATH)->iterator({ recurse => 1 });

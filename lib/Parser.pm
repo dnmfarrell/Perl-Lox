@@ -54,13 +54,24 @@ sub declaration {
 sub class_declaration {
   my $self = shift;
   my $name = $self->consume(IDENTIFIER, 'Expect class name');
+
+  my $superclass = undef;
+  if ($self->match(LESS)) {
+    $self->consume(IDENTIFIER, 'Expect superclass name');
+    $superclass = Expr::Variable->new({name => $self->previous});
+  }
+
   $self->consume(LEFT_BRACE, 'Expect \'{\' before class body');
   my @methods = ();
   while (!$self->check(RIGHT_BRACE) && !$self->is_at_end) {
     push @methods, $self->function_stmt('method');
   }
   $self->consume(RIGHT_BRACE, 'Expect \'}\' after class body');
-  return Stmt::Class->new({ name => $name, methods => \@methods });
+  return Stmt::Class->new({
+      superclass => $superclass,
+      methods    => \@methods,
+      name       => $name,
+  });
 }
 
 sub statement {
@@ -428,6 +439,12 @@ sub primary {
   }
   elsif ($self->match(STRING)) {
     return Expr::Literal->new({value => String->new($self->previous->{literal})});
+  }
+  elsif ($self->match(SUPER)) {
+    my $keyword = $self->previous;
+    $self->consume(DOT, 'Expect \'.\' after \'super\'');
+    my $method = $self->consume(IDENTIFIER, 'Expect superclass method name');
+    return Expr::Super->new({keyword => $keyword, method => $method});
   }
   elsif ($self->match(THIS)) {
     return Expr::This->new({keyword => $self->previous});

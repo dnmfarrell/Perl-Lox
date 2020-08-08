@@ -119,6 +119,16 @@ sub accept {
   return $visitor->visit_set_expr($self);
 }
 
+package Expr::Super;
+use parent -norequire, 'Expr';
+sub keyword { $_[0]->{keyword} }
+sub method  { $_[0]->{method} }
+
+sub accept {
+  my ($self, $visitor) = @_;
+  return $visitor->visit_super_expr($self);
+}
+
 package Expr::This;
 use parent -norequire, 'Expr';
 sub keyword { $_[0]->{keyword} }
