@@ -1,27 +1,27 @@
-package Interpreter;
+package Lox::Interpreter;
 use feature 'say';
 use strict;
 use warnings;
-use Bool;
-use Callable;
-use Environment;
-use Function;
+use Lox::Bool;
+use Lox::Callable;
+use Lox::Environment;
+use Lox::Function;
 use Lox::Class;
-use Nil;
-use TokenType;
+use Lox::Nil;
+use Lox::TokenType;
 use Scalar::Util 'looks_like_number';
 our $VERSION = 0.01;
 
 sub new {
   my ($class, $args) = @_;
-  my $globals = Environment->new({});
+  my $globals = Lox::Environment->new({});
   my $interpreter = bless {
     environment => $globals,
     globals     => $globals,
     locals      => {},
     %$args,
   }, $class;
-  $interpreter->globals->define('clock', Callable->new({
+  $interpreter->globals->define('clock', Lox::Callable->new({
     arity => 0,
     call  => sub { time },
   }));
@@ -68,13 +68,13 @@ sub visit_class_stmt {
   $self->environment->define($stmt->name->lexeme, undef);
 
   if ($superclass) {
-    $self->environment = Environment->new({ enclosing => $self->environment });
+    $self->environment = Lox::Environment->new({ enclosing => $self->environment });
     $self->environment->define('super', $superclass);
   }
 
   my %methods;
   for my $method ($stmt->methods->@*) {
-    my $function = Function->new({
+    my $function = Lox::Function->new({
       is_initializer => $method->name->lexeme eq 'init',
       declaration    => $method,
       closure        => $self->environment,
@@ -113,7 +113,7 @@ sub visit_if_stmt {
 
 sub visit_function_stmt {
   my ($self, $stmt) = @_;
-  my $function = Function->new({
+  my $function = Lox::Function->new({
     declaration => $stmt,
     closure => $self->environment,
   });
@@ -123,7 +123,7 @@ sub visit_function_stmt {
 
 sub visit_function_expr {
   my ($self, $expr) = @_;
-  return Function->new({
+  return Lox::Function->new({
     declaration => $expr,
     closure => $self->environment,
   });
@@ -211,7 +211,7 @@ sub visit_block_stmt {
   my ($self, $stmt) = @_;
   $self->execute_block(
     $stmt->statements,
-    Environment->new({ enclosing => $self->environment }));
+    Lox::Environment->new({ enclosing => $self->environment }));
 
   return undef;
 }
@@ -244,7 +244,7 @@ sub visit_call_expr {
   for my $arg ($expr->arguments->@*) {
     push @args, $self->evaluate($arg);
   }
-  unless (ref $callee && $callee->isa('Callable')) {
+  unless (ref $callee && $callee->isa('Lox::Callable')) {
     Lox::runtime_error($expr->paren, 'Can only call functions and classes');
   }
 
@@ -362,8 +362,8 @@ sub visit_binary_expr {
   elsif ($type == PLUS) {
     if (ref $left || ref $right) {
       if (ref $left eq ref $right) {
-        if (ref $left eq 'String') {
-          return String->new("$left" . "$right");
+        if (ref $left eq 'Lox::String') {
+          return Lox::String->new("$left" . "$right");
         }
       }
       Lox::runtime_error(

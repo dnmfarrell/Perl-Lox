@@ -1,4 +1,4 @@
-package Environment;
+package Lox::Environment;
 use strict;
 use warnings;
 our $VERSION = 0.01;

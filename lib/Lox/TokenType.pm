@@ -1,4 +1,4 @@
-package TokenType;
+package Lox::TokenType;
 use strict;
 use warnings;
 use Exporter 'import';

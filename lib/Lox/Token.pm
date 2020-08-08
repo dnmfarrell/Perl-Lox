@@ -1,7 +1,7 @@
-package Token;
+package Lox::Token;
 use strict;
 use warnings;
-use TokenType ();
+use Lox::TokenType ();
 our $VERSION = 0.01;
 
 sub new {
@@ -20,7 +20,7 @@ sub to_string {
   return sprintf '%3d:%3d %-12s %s %s',
     $self->{line},
     $self->{column},
-    TokenType::type($self->{type}),
+    Lox::TokenType::type($self->{type}),
     $self->{lexeme},
     $self->{literal};
 }

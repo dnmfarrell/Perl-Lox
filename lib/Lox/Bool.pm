@@ -1,29 +1,27 @@
 use strict;
 use warnings;
-package True;
+package Lox::True;
 use overload
   '""' => sub { 'true' },
-  '!'  => sub { $False::False },
+  '!'  => sub { $Lox::False::False },
   'bool' => sub { 1 },
   fallback => 0;
 
-our $True = bless {}, 'True';
-our $VERSION = 0.01;
+our $True = bless {}, 'Lox::True';
 
-package False;
+package Lox::False;
 use overload
   '""' => sub { 'false' },
-  '!'  => sub { $True::True },
+  '!'  => sub { $Lox::True::True },
   'bool' => sub { undef },
   fallback => 0;
 
-our $False = bless {}, 'False';
-our $VERSION = 0.01;
+our $False = bless {}, 'Lox::False';
 
-package Bool;
+package Lox::Bool;
 use Exporter 'import';
-our $True = $True::True;
-our $False = $False::False;
+our $True = $Lox::True::True;
+our $False = $Lox::False::False;
 our @EXPORT = qw($True $False);
 our $VERSION = 0.01;
 

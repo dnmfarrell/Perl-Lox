@@ -1,7 +1,7 @@
-package Callable;
+package Lox::Callable;
 use strict;
 use warnings;
-use Bool;
+use Lox::Bool;
 use overload
   '""' => sub { '<native fn>' },
   '!'  => sub { $False },

@@ -1,5 +1,5 @@
 package Lox::Instance;
-use Bool;
+use Lox::Bool;
 use overload (
   '""' => sub { $_[0]->klass->name . ' instance' },
   'bool' => sub { $True },

@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package Expr;
+package Lox::Expr;
 our $VERSION = 0.01;
 
 sub new {
@@ -8,8 +8,8 @@ sub new {
   return bless { %$args }, $class;
 }
 
-package Expr::Variable;
-use parent -norequire, 'Expr';
+package Lox::Expr::Variable;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 
 sub name { $_[0]->{name} }
@@ -19,8 +19,8 @@ sub accept {
   return $visitor->visit_variable_expr($self);
 }
 
-package Expr::Unary;
-use parent -norequire, 'Expr';
+package Lox::Expr::Unary;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub operator { $_[0]->{operator} }
 sub right { $_[0]->{right} }
@@ -30,8 +30,8 @@ sub accept {
   return $visitor->visit_unary_expr($self);
 }
 
-package Expr::Assign;
-use parent -norequire, 'Expr';
+package Lox::Expr::Assign;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub name { $_[0]->{name} }
 sub value { $_[0]->{value} }
@@ -41,8 +41,8 @@ sub accept {
   return $visitor->visit_assign_expr($self);
 }
 
-package Expr::Binary;
-use parent -norequire, 'Expr';
+package Lox::Expr::Binary;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub left { $_[0]->{left} }
 sub operator { $_[0]->{operator} }
@@ -53,8 +53,8 @@ sub accept {
   return $visitor->visit_binary_expr($self);
 }
 
-package Expr::Call;
-use parent -norequire, 'Expr';
+package Lox::Expr::Call;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub arguments { $_[0]->{arguments} }
 sub callee { $_[0]->{callee} }
@@ -65,8 +65,8 @@ sub accept {
   return $visitor->visit_call_expr($self);
 }
 
-package Expr::Get;
-use parent -norequire, 'Expr';
+package Lox::Expr::Get;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub name { $_[0]->{name} }
 sub object { $_[0]->{object} }
@@ -76,8 +76,8 @@ sub accept {
   return $visitor->visit_get_expr($self);
 }
 
-package Expr::Function;
-use parent -norequire, 'Expr';
+package Lox::Expr::Lox::Function;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub params { $_[0]->{params} }
 sub body   { $_[0]->{body} }
@@ -87,8 +87,8 @@ sub accept {
   return $visitor->visit_function_expr($self);
 }
 
-package Expr::Grouping;
-use parent -norequire, 'Expr';
+package Lox::Expr::Grouping;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub expression { $_[0]->{expression} }
 
@@ -97,8 +97,8 @@ sub accept {
   return $visitor->visit_grouping_expr($self);
 }
 
-package Expr::Literal;
-use parent -norequire, 'Expr';
+package Lox::Expr::Literal;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub value { $_[0]->{value} }
 
@@ -107,8 +107,8 @@ sub accept {
   return $visitor->visit_literal_expr($self);
 }
 
-package Expr::Logical;
-use parent -norequire, 'Expr';
+package Lox::Expr::Logical;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub left { $_[0]->{left} }
 sub operator { $_[0]->{operator} }
@@ -119,8 +119,8 @@ sub accept {
   return $visitor->visit_logical_expr($self);
 }
 
-package Expr::Set;
-use parent -norequire, 'Expr';
+package Lox::Expr::Set;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub name { $_[0]->{name} }
 sub object { $_[0]->{object} }
@@ -131,8 +131,8 @@ sub accept {
   return $visitor->visit_set_expr($self);
 }
 
-package Expr::Super;
-use parent -norequire, 'Expr';
+package Lox::Expr::Super;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub keyword { $_[0]->{keyword} }
 sub method  { $_[0]->{method} }
@@ -142,8 +142,8 @@ sub accept {
   return $visitor->visit_super_expr($self);
 }
 
-package Expr::This;
-use parent -norequire, 'Expr';
+package Lox::Expr::This;
+use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub keyword { $_[0]->{keyword} }
 sub name { $_[0]->keyword }

@@ -1,7 +1,7 @@
-package Nil;
+package Lox::Nil;
 use strict;
 use warnings;
-use Bool;
+use Lox::Bool;
 use overload
   '""' => sub { 'nil' },
   '!'  => sub { $True },
@@ -10,7 +10,7 @@ use overload
 
 use Exporter 'import';
 my $u = undef;
-our $Nil = bless \$u, 'Nil';
+our $Nil = bless \$u, 'Lox::Nil';
 our @EXPORT = qw($Nil);
 our $VERSION = 0.01;
 

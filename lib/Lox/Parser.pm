@@ -1,12 +1,12 @@
-package Parser;
+package Lox::Parser;
 use strict;
 use warnings;
-use Bool;
-use Expr;
-use Nil;
-use Stmt;
-use String;
-use TokenType;
+use Lox::Bool;
+use Lox::Expr;
+use Lox::Nil;
+use Lox::Stmt;
+use Lox::String;
+use Lox::TokenType;
 our $VERSION = 0.01;
 
 sub new {
@@ -59,7 +59,7 @@ sub class_declaration {
   my $superclass = undef;
   if ($self->match(LESS)) {
     $self->consume(IDENTIFIER, 'Expect superclass name');
-    $superclass = Expr::Variable->new({name => $self->previous});
+    $superclass = Lox::Expr::Variable->new({name => $self->previous});
   }
 
   $self->consume(LEFT_BRACE, 'Expect \'{\' before class body');
@@ -68,7 +68,7 @@ sub class_declaration {
     push @methods, $self->function_stmt('method');
   }
   $self->consume(RIGHT_BRACE, 'Expect \'}\' after class body');
-  return Stmt::Class->new({
+  return Lox::Stmt::Class->new({
       superclass => $superclass,
       methods    => \@methods,
       name       => $name,
@@ -90,7 +90,7 @@ sub statement {
     return $self->while_statement;
   }
   if ($self->match(LEFT_BRACE)) {
-    return Stmt::Block->new({statements => $self->block});
+    return Lox::Stmt::Block->new({statements => $self->block});
   }
   if ($self->match(PRINT)) {
     return $self->print_statement;
@@ -116,7 +116,7 @@ sub for_statement {
     $initializer = $self->expression_statement;
   }
 
-  my $condition = Expr::Literal->new({value => 1});
+  my $condition = Lox::Expr::Literal->new({value => 1});
   if (!$self->check(SEMICOLON)) {
     $condition = $self->expression;
   }
@@ -130,13 +130,13 @@ sub for_statement {
 
   my $body = $self->statement;
   if ($increment) {
-    $body = Stmt::Block->new({statements =>
-        [$body, Stmt::Expression->new({expression => $increment})]});
+    $body = Lox::Stmt::Block->new({statements =>
+        [$body, Lox::Stmt::Lox::Expression->new({expression => $increment})]});
   }
-  $body = Stmt::While->new({condition => $condition, body => $body});
+  $body = Lox::Stmt::While->new({condition => $condition, body => $body});
 
   if ($initializer) {
-    $body = Stmt::Block->new({statements => [$initializer, $body]});
+    $body = Lox::Stmt::Block->new({statements => [$initializer, $body]});
   }
 
   return $body;
@@ -153,7 +153,7 @@ sub if_statement {
   if ($self->match(ELSE)) {
     $else_branch = $self->statement;
   }
-  return Stmt::If->new({
+  return Lox::Stmt::If->new({
       condition   => $condition,
       then_branch => $then_branch,
       else_branch => $else_branch,
@@ -165,7 +165,7 @@ sub break_statement {
   $self->error($self->previous, 'Can only break out of loops')
     unless $self->{looping};
   $self->consume(SEMICOLON, 'Expect ";" after "break"');
-  return Stmt::Break->new({});
+  return Lox::Stmt::Break->new({});
 }
 
 sub var_declaration {
@@ -176,7 +176,7 @@ sub var_declaration {
     $init = $self->expression;
   }
   $self->consume(SEMICOLON, 'Expect ";" after variable declaration');
-  return Stmt::Var->new({name => $name, initializer => $init});
+  return Lox::Stmt::Var->new({name => $name, initializer => $init});
 }
 
 sub while_statement {
@@ -185,7 +185,7 @@ sub while_statement {
   my $condition = $self->expression;
   $self->consume(RIGHT_PAREN, "Expect ')' after condition");
   $self->{looping}++;
-  my $while = Stmt::While->new({
+  my $while = Lox::Stmt::While->new({
       condition => $condition,
       body      => $self->statement,
     });
@@ -197,14 +197,14 @@ sub expression_statement {
   my $self = shift;
   my $value = $self->expression;
   $self->consume(SEMICOLON, 'Expect \';\' after expression');
-  return Stmt::Expression->new({expression => $value});
+  return Lox::Stmt::Lox::Expression->new({expression => $value});
 }
 
 sub function_stmt {
   my ($self, $kind) = @_;
   my $name = $self->consume(IDENTIFIER, "Expect $kind name");
   my ($parameters, $body) = $self->parse_function($kind);
-  return Stmt::Function->new({
+  return Lox::Stmt::Lox::Function->new({
       name   => $name,
       params => $parameters,
       body   => $body,
@@ -214,7 +214,7 @@ sub function_stmt {
 sub function_expr {
   my ($self) = @_;
   my ($parameters, $body) = $self->parse_function('anonymous function');
-  return Expr::Function->new({
+  return Lox::Expr::Lox::Function->new({
       params => $parameters,
       body   => $body,
     });
@@ -256,7 +256,7 @@ sub print_statement {
   my $self = shift;
   my $value = $self->expression;
   $self->consume(SEMICOLON, 'Expect ";" after value');
-  return Stmt::Print->new({expression => $value});
+  return Lox::Stmt::Print->new({expression => $value});
 }
 
 sub return_statement {
@@ -266,7 +266,7 @@ sub return_statement {
     unless $self->{functioning};
   my $value = $self->check(SEMICOLON) ? undef : $self->expression;
   $self->consume(SEMICOLON, 'Expect ";" after return value');
-  return Stmt::Return->new({keyword => $keyword, value => $value});
+  return Lox::Stmt::Return->new({keyword => $keyword, value => $value});
 }
 
 sub assignment {
@@ -277,11 +277,11 @@ sub assignment {
     my $value = $self->assignment;
     # we parsed the left side THEN found an equals sign
     # returns a new expr using the left side input
-    if (ref $expr eq 'Expr::Variable') {
-      return Expr::Assign->new({name => $expr->name, value => $value});
+    if (ref $expr eq 'Lox::Expr::Variable') {
+      return Lox::Expr::Assign->new({name => $expr->name, value => $value});
     }
-    elsif (ref $expr eq 'Expr::Get') {
-      return Expr::Set->new({
+    elsif (ref $expr eq 'Lox::Expr::Get') {
+      return Lox::Expr::Set->new({
           object => $expr->object,
           value  => $value,
           name   => $expr->name,
@@ -297,7 +297,7 @@ sub _or {
   my $expr = $self->_and;
 
   while ($self->match(OR)) {
-    $expr = Expr::Logical->new({
+    $expr = Lox::Expr::Logical->new({
         left => $expr,
         operator => $self->previous,
         right => $self->_and,
@@ -311,7 +311,7 @@ sub _and {
   my $expr = $self->equality;
 
   while ($self->match(AND)) {
-    $expr = Expr::Logical->new({
+    $expr = Lox::Expr::Logical->new({
         left => $expr,
         operator => $self->previous,
         right => $self->_and,
@@ -326,7 +326,7 @@ sub equality {
   my $self = shift;
   my $expr = $self->comparison;
   while ($self->match(BANG_EQUAL, EQUAL_EQUAL)) {
-    $expr = Expr::Binary->new({
+    $expr = Lox::Expr::Binary->new({
         left     => $expr,
         operator => $self->previous,
         right    => $self->comparison,
@@ -339,7 +339,7 @@ sub comparison {
   my $self = shift;
   my $expr = $self->addition;
   while ($self->match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-    $expr = Expr::Binary->new({
+    $expr = Lox::Expr::Binary->new({
         left     => $expr,
         operator => $self->previous,
         right    => $self->addition,
@@ -352,7 +352,7 @@ sub addition {
   my $self = shift;
   my $expr = $self->multiplication;
   while ($self->match(MINUS, PLUS)) {
-    $expr = Expr::Binary->new({
+    $expr = Lox::Expr::Binary->new({
         left     => $expr,
         operator => $self->previous,
         right    => $self->multiplication,
@@ -365,7 +365,7 @@ sub multiplication {
   my $self = shift;
   my $expr = $self->unary;
   while ($self->match(SLASH, STAR)) {
-    $expr = Expr::Binary->new({
+    $expr = Lox::Expr::Binary->new({
         left     => $expr,
         operator => $self->previous,
         right    => $self->unary,
@@ -377,7 +377,7 @@ sub multiplication {
 sub unary {
   my $self = shift;
   if ($self->match(BANG, MINUS)) {
-    my $expr = Expr::Unary->new({
+    my $expr = Lox::Expr::Unary->new({
         operator => $self->previous,
         right    => $self->unary,
     });
@@ -394,7 +394,7 @@ sub call {
       $expr = $self->finish_call($expr);
     }
     elsif ($self->match(DOT)) {
-      $expr = Expr::Get->new({
+      $expr = Lox::Expr::Get->new({
        object => $expr,
        name   => $self->consume(IDENTIFIER,'Expect property name after \'.\''),
       });
@@ -417,7 +417,7 @@ sub finish_call {
     } while ($self->match(COMMA));
   }
   my $paren = $self->consume(RIGHT_PAREN, 'Expect ")" after arguments');
-  return Expr::Call->new({
+  return Lox::Expr::Call->new({
       arguments => \@args,
       callee    => $callee,
       paren     => $paren,
@@ -427,36 +427,36 @@ sub finish_call {
 sub primary {
   my $self = shift;
   if ($self->match(FALSE)) {
-    return Expr::Literal->new({value => $False});
+    return Lox::Expr::Literal->new({value => $False});
   }
   elsif ($self->match(TRUE)) {
-    return Expr::Literal->new({value => $True});
+    return Lox::Expr::Literal->new({value => $True});
   }
   elsif ($self->match(NIL)) {
-    return Expr::Literal->new({value => $Nil});
+    return Lox::Expr::Literal->new({value => $Nil});
   }
   elsif ($self->match(NUMBER)) {
-    return Expr::Literal->new({value => $self->previous->{literal}});
+    return Lox::Expr::Literal->new({value => $self->previous->{literal}});
   }
   elsif ($self->match(STRING)) {
-    return Expr::Literal->new({value => String->new($self->previous->{literal})});
+    return Lox::Expr::Literal->new({value => Lox::String->new($self->previous->{literal})});
   }
   elsif ($self->match(SUPER)) {
     my $keyword = $self->previous;
     $self->consume(DOT, 'Expect \'.\' after \'super\'');
     my $method = $self->consume(IDENTIFIER, 'Expect superclass method name');
-    return Expr::Super->new({keyword => $keyword, method => $method});
+    return Lox::Expr::Super->new({keyword => $keyword, method => $method});
   }
   elsif ($self->match(THIS)) {
-    return Expr::This->new({keyword => $self->previous});
+    return Lox::Expr::This->new({keyword => $self->previous});
   }
   elsif ($self->match(IDENTIFIER)) {
-    return Expr::Variable->new({name => $self->previous});
+    return Lox::Expr::Variable->new({name => $self->previous});
   }
   elsif ($self->match(LEFT_PAREN)) {
     my $expr = $self->expression;
     $self->consume(RIGHT_PAREN, 'Expect ")" after expression');
-    return Expr::Grouping->new({expression => $expr});
+    return Lox::Expr::Grouping->new({expression => $expr});
   }
   elsif ($self->match(FUN)) {
     return $self->function_expr;

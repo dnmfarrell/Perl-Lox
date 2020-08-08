@@ -1,8 +1,8 @@
-package Scanner;
+package Lox::Scanner;
 use strict;
 use warnings;
-use TokenType;
-use Token;
+use Lox::TokenType;
+use Lox::Token;
 our $VERSION = 0.01;
 
 sub new {
@@ -21,7 +21,7 @@ sub new {
 sub print {
   my ($self) = @_;
   for ($self->{tokens}->@*) {
-    printf "% 3d % 3d % -15s %s\n", $_->{line}, $_->{column}, TokenType::type($_->{type}), $_->{lexeme};
+    printf "% 3d % 3d % -15s %s\n", $_->{line}, $_->{column}, Lox::TokenType::type($_->{type}), $_->{lexeme};
   }
 }
 
@@ -323,7 +323,7 @@ sub chomp_slash {
 
 sub add_token {
   my ($self, %args) = @_;
-  push $self->{tokens}->@*, Token->new(
+  push $self->{tokens}->@*, Lox::Token->new(
     {
       literal => undef,
       column  => $self->{column},
@@ -335,7 +335,7 @@ sub add_token {
 sub lex_error {
   my ($self, $c, $msg) = @_;
   $msg //= "unexpected character: $c";
-  my $t = Token->new({
+  my $t = Lox::Token->new({
       literal => undef,
       lexeme  => $c,
       column  => $self->{column},

@@ -1,10 +1,10 @@
-package Function;
-use parent 'Callable';
+package Lox::Function;
+use parent 'Lox::Callable';
 use strict;
 use warnings;
-use Bool;
+use Lox::Bool;
 use Carp 'croak';
-use Environment;
+use Lox::Environment;
 use overload
   '""' => sub { sprintf '<fn %s>',  $_[0]->declaration->name->lexeme },
   '!'  => sub { $False },
@@ -26,7 +26,7 @@ sub body { $_[0]->declaration->body }
 
 sub call {
   my ($self, $interpreter, $args) = @_;
-  my $environment = Environment->new({ enclosing => $self->closure });
+  my $environment = Lox::Environment->new({ enclosing => $self->closure });
   for (my $i = 0; $i < $self->params->@*; $i++) {
     $environment->define($self->params->[$i]->lexeme,$args->[$i]);
   }
@@ -40,9 +40,9 @@ sub call {
 
 sub bind {
   my ($self, $instance) = @_;
-  my $environment = Environment->new({ enclosing => $self->closure });
+  my $environment = Lox::Environment->new({ enclosing => $self->closure });
   $environment->define('this', $instance);
-  return Function->new({
+  return Lox::Function->new({
       is_initializer => $self->{is_initializer},
       declaration    => $self->declaration,
       closure        => $environment,

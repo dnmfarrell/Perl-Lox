@@ -1,12 +1,12 @@
 package Lox::Class;
-use Bool;
+use Lox::Bool;
 use overload (
   '""' => sub { $_[0]->name },
   'bool' => sub { $True },
   '!' => sub { $False },
   fallback => 0,
 );
-use parent 'Callable';
+use parent 'Lox::Callable';
 use strict;
 use warnings;
 use Lox::Instance;

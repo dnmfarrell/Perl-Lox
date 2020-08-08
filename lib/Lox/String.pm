@@ -1,7 +1,7 @@
-package String;
+package Lox::String;
 use strict;
 use warnings;
-use Bool;
+use Lox::Bool;
 use overload
   '""' => sub { ${$_[0]} },
   'bool' => sub { $True },

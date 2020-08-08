@@ -1,4 +1,4 @@
-package Resolver;
+package Lox::Resolver;
 use strict;
 use warnings;
 use enum qw(CLASS FUNCTION INITIALIZER METHOD NONE SUBCLASS);
