@@ -2,6 +2,7 @@ package Token;
 use strict;
 use warnings;
 use TokenType ();
+our $VERSION = 0.01;
 
 sub new {
   my ($class, $args) = @_;

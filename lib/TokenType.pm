@@ -2,6 +2,7 @@ package TokenType;
 use strict;
 use warnings;
 use Exporter 'import';
+our $VERSION = 0.01;
 
 my @tokens = qw(
   LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE

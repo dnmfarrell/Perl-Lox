@@ -7,6 +7,7 @@ use Nil;
 use Stmt;
 use String;
 use TokenType;
+our $VERSION = 0.01;
 
 sub new {
   my ($class, $args) = @_;

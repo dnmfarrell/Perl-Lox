@@ -8,6 +8,8 @@ use overload
   '!' => sub { $False },
   fallback => 0;
 
+our $VERSION = 0.01;
+
 sub new {
   my ($class, $string) = @_;
   return bless \$string, $class;

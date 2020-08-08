@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use TokenType;
 use Token;
+our $VERSION = 0.01;
 
 sub new {
   my ($class, $args) = @_;

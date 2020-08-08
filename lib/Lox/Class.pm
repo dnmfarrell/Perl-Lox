@@ -10,6 +10,7 @@ use parent 'Callable';
 use strict;
 use warnings;
 use Lox::Instance;
+our $VERSION = 0.01;
 
 sub new {
   my ($class, $args) = @_;

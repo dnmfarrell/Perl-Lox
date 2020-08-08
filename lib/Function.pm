@@ -11,6 +11,8 @@ use overload
   'bool' => sub { $True }, # only false and nil are untrue in Lox
   fallback => 0;
 
+our $VERSION = 0.01;
+
 sub new {
   my ($class, $args) = @_;
   return bless { %$args }, $class;

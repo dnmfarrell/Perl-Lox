@@ -7,6 +7,7 @@ use Parser;
 use Resolver;
 use Scanner;
 use TokenType;
+our $VERSION = 0.01;
 
 my $had_error = undef;
 
@@ -22,7 +23,7 @@ sub run_file {
 
 sub run_prompt {
   my ($debug_mode) = @_;
-  print "Welcome to Lox version 0.01\n> ";
+  print "Welcome to Perl-Lox version $VERSION\n> ";
   while (my $line = <>) {
     run($line, 'repl', $debug_mode);
     undef $had_error;

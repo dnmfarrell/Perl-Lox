@@ -2,6 +2,7 @@ package Resolver;
 use strict;
 use warnings;
 use enum qw(CLASS FUNCTION INITIALIZER METHOD NONE SUBCLASS);
+our $VERSION = 0.01;
 
 sub new {
   my ($class, $interpreter) = @_;

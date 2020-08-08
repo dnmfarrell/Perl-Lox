@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 package Expr;
+our $VERSION = 0.01;
 
 sub new {
   my ($class, $args) = @_;
@@ -9,6 +10,7 @@ sub new {
 
 package Expr::Variable;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 
 sub name { $_[0]->{name} }
 
@@ -19,6 +21,7 @@ sub accept {
 
 package Expr::Unary;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub operator { $_[0]->{operator} }
 sub right { $_[0]->{right} }
 
@@ -29,6 +32,7 @@ sub accept {
 
 package Expr::Assign;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub name { $_[0]->{name} }
 sub value { $_[0]->{value} }
 
@@ -39,6 +43,7 @@ sub accept {
 
 package Expr::Binary;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub left { $_[0]->{left} }
 sub operator { $_[0]->{operator} }
 sub right { $_[0]->{right} }
@@ -50,6 +55,7 @@ sub accept {
 
 package Expr::Call;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub arguments { $_[0]->{arguments} }
 sub callee { $_[0]->{callee} }
 sub paren { $_[0]->{paren} }
@@ -61,6 +67,7 @@ sub accept {
 
 package Expr::Get;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub name { $_[0]->{name} }
 sub object { $_[0]->{object} }
 
@@ -71,6 +78,7 @@ sub accept {
 
 package Expr::Function;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub params { $_[0]->{params} }
 sub body   { $_[0]->{body} }
 
@@ -81,6 +89,7 @@ sub accept {
 
 package Expr::Grouping;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub expression { $_[0]->{expression} }
 
 sub accept {
@@ -90,6 +99,7 @@ sub accept {
 
 package Expr::Literal;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub value { $_[0]->{value} }
 
 sub accept {
@@ -99,6 +109,7 @@ sub accept {
 
 package Expr::Logical;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub left { $_[0]->{left} }
 sub operator { $_[0]->{operator} }
 sub right { $_[0]->{right} }
@@ -110,6 +121,7 @@ sub accept {
 
 package Expr::Set;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub name { $_[0]->{name} }
 sub object { $_[0]->{object} }
 sub value { $_[0]->{value} }
@@ -121,6 +133,7 @@ sub accept {
 
 package Expr::Super;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub keyword { $_[0]->{keyword} }
 sub method  { $_[0]->{method} }
 
@@ -131,6 +144,7 @@ sub accept {
 
 package Expr::This;
 use parent -norequire, 'Expr';
+our $VERSION = 0.01;
 sub keyword { $_[0]->{keyword} }
 sub name { $_[0]->keyword }
 
