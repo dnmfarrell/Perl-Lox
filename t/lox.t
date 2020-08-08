@@ -7,13 +7,9 @@ use Path::Tiny 'path';
 my $LOX_PATH = 'lox';
 my $TEST_PATH = 'test';
 
-my @UNSUPPORTED = qw(
-  benchmark/
-  expressions/
-  limit/
-  operator/equals_method.lox
-  regression/394.lox
-  scanning/
+my @UNSUPPORTED = (
+  'operator/equals_method.lox', # I'm not sure why this behavior is desirable
+  'benchmark/', # take forever to run
 );
 
 my $iter = path($TEST_PATH)->iterator({ recurse => 1 });
@@ -27,7 +23,6 @@ done_testing;
 
 sub test_file {
   my $filepath = shift;;
-  #warn "testing $filepath\n";
   open my $fh, '<', $filepath or die "Couldn't open $filepath $!";
   my $expected = '';
   my $test_content = '';
@@ -37,7 +32,6 @@ sub test_file {
   }
   my $output = join '', `./$LOX_PATH $filepath`;
   my $result = is($output, $expected, "Got expected output for $filepath");
-  #warn "$filepath\n" unless $expected;
   unless ($result) {
     print "TEST BEGIN\n${test_content}TEST END\n";
     exit 1;
