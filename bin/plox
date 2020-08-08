@@ -1,7 +1,6 @@
-#!/usr/bin/env perl
+#!perl
 use strict;
 use warnings;
-use lib 'lib';
 use Getopt::Long 'GetOptions';
 use Lox;
 
@@ -10,7 +9,7 @@ GetOptions(
 );
 
 if (@ARGV > 1) {
-  print "Usage: lox [script]\n";
+  print "Usage: plox [script]\n";
   exit 64;
 }
 elsif (@ARGV == 1) {

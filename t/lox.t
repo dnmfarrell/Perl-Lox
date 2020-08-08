@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 use Path::Tiny 'path';
 
-my $LOX_PATH = 'lox';
+my $LOX_PATH = 'bin/plox';
 my $TEST_PATH = 'test';
 
 my @UNSUPPORTED = (
@@ -30,7 +30,7 @@ sub test_file {
     $test_content .= $line;
     $expected .= $1 if $line =~ qr{// expect: (.+)$}s;
   }
-  my $output = join '', `./$LOX_PATH $filepath`;
+  my $output = join '', `perl -Ilib $LOX_PATH $filepath`;
   my $result = is($output, $expected, "Got expected output for $filepath");
   unless ($result) {
     print "TEST BEGIN\n${test_content}TEST END\n";
