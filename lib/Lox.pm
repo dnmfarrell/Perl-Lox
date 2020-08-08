@@ -76,3 +76,57 @@ sub report {
 }
 
 1;
+__END__
+=head1 NAME
+
+Lox - A Perl implementation of the Lox programming language
+
+=head1 DESCRIPTION
+
+A Perl translation of the Java Lox interpreter from L<Crafting Interpreters|https://craftinginterpreters.com/>.
+
+=head1 INSTALL
+
+  $ cpanm --installdeps .
+
+=head1 SYNOPSIS
+
+  $ perl -Ilib bin/plox
+  Welcome to Perl-Lox version 0.01
+  >
+
+  $ perl -Ilib bin/plox hello.lox
+  Hello, World!
+
+
+=head1 TESTING
+
+The test suite includes 252 test files from the Crafting Interpreters L<repo|https://github.com/munificent/craftinginterpreters>.
+
+  $ prove -l t/*
+
+=head1 ISSUES
+
+Differences from the canonical "jlox" implementation:
+
+=over 2
+
+=item * signed zero is unsupported
+
+=item * methods are equivalent
+
+Prints "true" in plox and "false" in jlox:
+
+  class Foo  { bar () { } } print Foo().bar == Foo().bar;
+
+=back
+
+=head1 AUTHOR
+
+Copyright 2020 David Farrell
+
+=head1 LICENSE
+
+See F<LICENSE> file.
+
+=cut
