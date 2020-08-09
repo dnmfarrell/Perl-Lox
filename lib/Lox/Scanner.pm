@@ -20,7 +20,8 @@ sub new {
 sub print {
   my ($self) = @_;
   for ($self->{tokens}->@*) {
-    printf "% 3d % 3d % -15s %s\n", $_->{line}, $_->{column}, Lox::TokenType::type($_->{type}), $_->{lexeme};
+    printf "% 3d % 3d % -15s %s\n",
+      $_->{line}, $_->{column}, Lox::TokenType::type($_->{type}), $_->{lexeme};
   }
 }
 
@@ -90,13 +91,6 @@ sub scan_token {
   elsif ($c eq '/') {
     $self->chomp_slash($c);
   }
-  elsif ($c eq ' ' || $c eq "\t") {
-    undef;
-  }
-  elsif ($c eq "\n") {
-    $self->{line}++;
-    $self->{column} = 0;
-  }
   elsif ($c eq '"') {
     $self->chomp_string($c);
   }
@@ -105,6 +99,9 @@ sub scan_token {
   }
   elsif ($c =~ /\w/) {
     $self->chomp_identifier($c);
+  }
+  elsif ($c =~ /\s/) {
+    # whitespace no-op
   }
   else {
     $self->lex_error($c);
@@ -128,8 +125,15 @@ sub match {
 
 sub advance {
   my $self = shift;
-  $self->{column}++;
-  return substr $self->{source}, $self->{current}++, 1;
+  my $next = substr $self->{source}, $self->{current}++, 1;
+  if ($next eq "\n") {
+    $self->{column} = 0;
+    $self->{line}++;
+  }
+  else {
+    $self->{column}++;
+  }
+  return $next;
 }
 
 sub peek {
@@ -252,20 +256,18 @@ sub chomp_string {
 
   while (!$self->is_at_end && $self->peek ne '"') {
     my $next = $self->advance;
-    if ($next eq "\n") {
-      $self->{line}++;
-    }
-    elsif ($next eq '\\') { # handle \"
+    if ($next eq '\\') { # handle \"
       $next .= $self->advance;
     }
     $word .= $next;
   }
   if ($self->is_at_end) {
-    $self->lex_error('EOF', "Unterminated string");
+    $self->lex_error('EOF', 'Unterminated string');
     return;
   }
   $self->advance;
-  $self->add_token(lexeme=>"\"$word\"", type=>STRING, literal=>$word, column=>$column);
+  $self->add_token(
+    lexeme=>"\"$word\"", type=>STRING, literal=>$word, column=>$column);
 }
 
 sub chomp_bang {
@@ -310,9 +312,29 @@ sub chomp_less {
 
 sub chomp_slash {
   my ($self, $c) = @_;
-  if ($self->peek eq '/') {
+  if ($self->peek eq '/') { # single-line comment
     while (!$self->is_at_end && $self->peek ne "\n") {
       $self->advance;
+    }
+  }
+  elsif ($self->peek eq '*') { # multi-line comment
+    my $multiline = 1;
+    while (!$self->is_at_end) {
+      if ($self->peek(2) eq '*/') {
+        $multiline--;
+        $self->advance;
+        $self->advance;
+      }
+      elsif ($self->peek(2) eq '/*') {
+        $multiline++;
+        $self->advance;
+        $self->advance;
+      }
+      last unless $multiline;
+      $self->advance;
+    }
+    if ($multiline) {
+      $self->lex_error('EOF', 'Unterminated multi-line comment');
     }
   }
   else {
