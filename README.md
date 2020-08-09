@@ -4,13 +4,35 @@ Lox - A Perl implementation of the Lox programming language
 
 ### DESCRIPTION
 
-A Perl translation of the Java Lox interpreter from [Crafting Interpreters](https://craftinginterpreters.com/).
+A Perl translation of the Java Lox interpreter from
+[Crafting Interpreters](https://craftinginterpreters.com/).
 
 ### INSTALL
 
+To install the project dependencies and just run `plox` from the project
+directory:
+
     $ cpanm --installdeps .
 
+If you'd rather build and install it:
+
+    $ perl Makefile.PL
+    $ make
+    $ make test
+    $ make install
+
 ### SYNOPSIS
+
+If you have built and installed `plox`:
+
+    $ plox
+    Welcome to Perl-Lox version 0.01
+    >
+
+    $ plox hello.lox
+    Hello, World!
+
+Otherwise from the root project directory:
 
     $ perl -Ilib bin/plox
     Welcome to Perl-Lox version 0.01
@@ -21,7 +43,8 @@ A Perl translation of the Java Lox interpreter from [Crafting Interpreters](http
 
 ### TESTING
 
-The test suite includes 252 test files from the Crafting Interpreters [repo](https://github.com/munificent/craftinginterpreters).
+The test suite includes 238 test files from the Crafting Interpreters
+[repo](https://github.com/munificent/craftinginterpreters).
 
     $ prove -l t/*
 
