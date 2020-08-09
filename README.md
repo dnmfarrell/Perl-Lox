@@ -48,7 +48,16 @@ The test suite includes 238 test files from the Crafting Interpreters
 
     $ prove -l t/*
 
-### ISSUES
+### EXTENSIONS
+
+Perl-Lox has these capabilities from the "challenges" sections of the book:
+
+- Anonymous functions `fun () { ... }`
+- Multi-line comments `/* ... */`
+- New Exceptions:
+    - - Evaluating an uninitialized variable
+
+### DIFFERENCES
 
 Differences from the canonical "jlox" implementation:
 

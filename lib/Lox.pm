@@ -126,7 +126,27 @@ L<repo|https://github.com/munificent/craftinginterpreters>.
 
   $ prove -l t/*
 
-=head1 ISSUES
+=head1 EXTENSIONS
+
+Perl-Lox has these capabilities from the "challenges" sections of the book:
+
+=over 2
+
+=item * Anonymous functions C<fun () { ... }>
+
+=item * Multi-line comments C</* ... */>
+
+=item * New Exceptions:
+
+=over 2
+
+=item - Evaluating an uninitialized variable
+
+=back
+
+=back
+
+=head1 DIFFERENCES
 
 Differences from the canonical "jlox" implementation:
 
