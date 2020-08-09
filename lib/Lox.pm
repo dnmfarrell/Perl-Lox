@@ -38,11 +38,9 @@ sub run {
   if ($@) {
     die "Unexpected error: $@";
   }
-  elsif ($scanner->{errors}->@*) {
-    error(@$_) for ($scanner->{errors}->@*);
-  }
   else {
     $scanner->print if $debug_mode;
+    return if $had_error;
     my $parser = Lox::Parser->new({tokens => $scanner->{tokens}, repl => $is_repl});
     my $stmts = $parser->parse;
     if ($parser->errors->@*) {

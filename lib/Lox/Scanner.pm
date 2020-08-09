@@ -14,7 +14,6 @@ sub new {
     column  => 0,
     line    => 1,
     blocks  => [],
-    errors  => [],
   }, $class;
 }
 
