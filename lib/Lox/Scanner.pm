@@ -13,7 +13,6 @@ sub new {
     current => 0,
     column  => 0,
     line    => 1,
-    blocks  => [],
   }, $class;
 }
 
