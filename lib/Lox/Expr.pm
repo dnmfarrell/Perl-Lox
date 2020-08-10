@@ -76,7 +76,7 @@ sub accept {
   return $visitor->visit_get_expr($self);
 }
 
-package Lox::Expr::Lox::Function;
+package Lox::Expr::Function;
 use parent -norequire, 'Lox::Expr';
 our $VERSION = 0.01;
 sub params { $_[0]->{params} }

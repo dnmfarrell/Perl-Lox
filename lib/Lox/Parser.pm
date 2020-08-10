@@ -40,7 +40,7 @@ sub declaration {
       $self->function_stmt('function');
     }
     elsif ($self->match(CLASS)) {
-      return $self->class_declaration;
+      $self->class_declaration;
     }
     elsif ($self->match(VAR)) { $self->var_declaration }
     else { $self->statement }
@@ -128,16 +128,18 @@ sub for_statement {
   }
   $self->consume(RIGHT_PAREN, 'Expect ")" after for clauses');
 
+  $self->{looping}++;
   my $body = $self->statement;
   if ($increment) {
     $body = Lox::Stmt::Block->new({statements =>
-        [$body, Lox::Stmt::Lox::Expression->new({expression => $increment})]});
+        [$body, Lox::Stmt::Expression->new({expression => $increment})]});
   }
   $body = Lox::Stmt::While->new({condition => $condition, body => $body});
 
   if ($initializer) {
     $body = Lox::Stmt::Block->new({statements => [$initializer, $body]});
   }
+  $self->{looping}--;
 
   return $body;
 }
@@ -197,14 +199,14 @@ sub expression_statement {
   my $self = shift;
   my $value = $self->expression;
   $self->consume(SEMICOLON, 'Expect \';\' after expression');
-  return Lox::Stmt::Lox::Expression->new({expression => $value});
+  return Lox::Stmt::Expression->new({expression => $value});
 }
 
 sub function_stmt {
   my ($self, $kind) = @_;
   my $name = $self->consume(IDENTIFIER, "Expect $kind name");
   my ($parameters, $body) = $self->parse_function($kind);
-  return Lox::Stmt::Lox::Function->new({
+  return Lox::Stmt::Function->new({
       name   => $name,
       params => $parameters,
       body   => $body,
@@ -214,7 +216,7 @@ sub function_stmt {
 sub function_expr {
   my ($self) = @_;
   my ($parameters, $body) = $self->parse_function('anonymous function');
-  return Lox::Expr::Lox::Function->new({
+  return Lox::Expr::Function->new({
       params => $parameters,
       body   => $body,
     });

@@ -47,7 +47,7 @@ sub execute {
 
 sub resolve {
   my ($self, $expr, $depth) = @_;
-  $self->locals->{"$expr"} = { expr=>$expr, distance=>$depth, accessed=>0 };
+  $self->locals->{"$expr"} = $depth;
 }
 
 sub visit_break_stmt {
@@ -156,7 +156,7 @@ sub visit_set_expr {
 
 sub visit_super_expr {
   my ($self, $expr) = @_;
-  my $distance = $self->look_up_variable_local($expr);
+  my $distance = $self->locals->{"$expr"};
   my $superclass = $self->environment->get_at($distance, 'super');
   my $object = $self->environment->get_at($distance - 1, 'this');
   my $method = $superclass->find_method($expr->method->lexeme);
@@ -288,7 +288,7 @@ sub visit_unary_expr {
 sub visit_assign_expr {
   my ($self, $expr) = @_;
   my $value = $self->evaluate($expr->value);
-  my $distance = $self->look_up_variable_local($expr);
+  my $distance = $self->locals->{"$expr"};
   if (defined $distance) {
     $self->environment->assign_at($distance, $expr->name, $value);
   }
@@ -303,19 +303,9 @@ sub visit_variable_expr {
   return $self->look_up_variable($expr);
 }
 
-sub look_up_variable_local {
-  my ($self, $expr) = @_;
-  my $local = $self->locals->{"$expr"};
-  if ($local) {
-    $local->{accessed}++;
-    return $local->{distance};
-  }
-  return undef;
-}
-
 sub look_up_variable {
   my ($self, $expr) = @_;
-  my $distance = $self->look_up_variable_local($expr);
+  my $distance = $self->locals->{"$expr"};
   return defined $distance
     ? $self->environment->get_at($distance, $expr->name->lexeme)
     : $self->globals->get($expr->name);

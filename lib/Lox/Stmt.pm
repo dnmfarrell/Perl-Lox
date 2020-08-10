@@ -36,7 +36,7 @@ sub accept {
   return $visitor->visit_class_stmt($self);
 }
 
-package Lox::Stmt::Lox::Expression;
+package Lox::Stmt::Expression;
 use parent -norequire, 'Lox::Stmt';
 sub expression { $_[0]->{expression} }
 
@@ -45,7 +45,7 @@ sub accept {
   return $visitor->visit_expression_stmt($self);
 }
 
-package Lox::Stmt::Lox::Function;
+package Lox::Stmt::Function;
 use parent -norequire, 'Lox::Stmt';
 sub name   { $_[0]->{name} }
 sub params { $_[0]->{params} }

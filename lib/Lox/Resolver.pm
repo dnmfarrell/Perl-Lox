@@ -19,11 +19,21 @@ sub current_class :lvalue { $_[0]->{current_class} }
 sub interpreter { $_[0]->{interpreter} }
 sub scopes { $_[0]->{scopes} }
 
+sub run {
+  my ($self, $stmts) = @_;
+  $self->resolve($stmts);
+}
+
 sub visit_block_stmt {
   my ($self, $stmt) = @_;
   $self->begin_scope;
   $self->resolve($stmt->statements);
   $self->end_scope;
+  return undef;
+}
+
+sub visit_break_stmt {
+  my ($self, $stmt) = @_;
   return undef;
 }
 
@@ -109,16 +119,7 @@ sub resolve {
     $stmt_or_expr = [$stmt_or_expr];
   }
   $_->accept($self) for (@$stmt_or_expr);
-  #$self->check_all_local_variables_used;
   return undef;
-}
-
-sub check_all_local_variables_used {
-  my $self = shift;
-  for my $local (values $self->interpreter->locals->%*) {
-    next if $local->{accessed};
-    Lox::error($local->{expr}->name, 'Local variable is never used');
-  }
 }
 
 sub resolve_function {
@@ -184,6 +185,12 @@ sub visit_call_expr {
   for my $argument ($expr->arguments->@*) {
     $self->resolve($argument);
   }
+  return undef;
+}
+
+sub visit_function_expr {
+  my ($self, $expr) = @_;
+  $self->resolve_function($expr, FUNCTION);
   return undef;
 }
 

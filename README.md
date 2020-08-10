@@ -54,8 +54,8 @@ Perl-Lox has these capabilities from the "challenges" sections of the book:
 
 - Anonymous functions `fun () { ... }`
 - Multi-line comments `/* ... */`
-- New Exceptions:
-    - - Evaluating an uninitialized variable
+- Break statements in loops
+    - Evaluating an uninitialized variable
 
 ### DIFFERENCES
 

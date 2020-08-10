@@ -50,7 +50,7 @@ sub run {
     print Lox::AstPrinter->new->print_tree($stmts), "\n" if $debug_mode;
     my $interpreter = Lox::Interpreter->new({});
     my $resolver = Lox::Resolver->new($interpreter);
-    $resolver->resolve($stmts);
+    $resolver->run($stmts);
     return if $had_error;
     $interpreter->interpret($stmts);
   }
@@ -134,13 +134,15 @@ Perl-Lox has these capabilities from the "challenges" sections of the book:
 
 =item * Anonymous functions C<fun () { ... }>
 
+=item * Break statements in loops
+
 =item * Multi-line comments C</* ... */>
 
 =item * New Exceptions:
 
 =over 2
 
-=item - Evaluating an uninitialized variable
+=item * Evaluating an uninitialized variable
 
 =back
 
