@@ -3,10 +3,10 @@ use parent 'Lox::Callable';
 use strict;
 use warnings;
 use Lox::Bool;
-use Carp 'croak';
 use Lox::Environment;
 use overload
-  '""' => sub { sprintf '<fn %s>',  $_[0]->declaration->name->lexeme },
+  '""' => sub { sprintf '<fn %s>',  $_[0]->declaration->can('name')
+                  ? $_[0]->declaration->name->lexeme : 'lambda' },
   '!'  => sub { $False },
   'bool' => sub { $True }, # only false and nil are untrue in Lox
   fallback => 0;

@@ -215,7 +215,7 @@ sub function_stmt {
 
 sub function_expr {
   my ($self) = @_;
-  my ($parameters, $body) = $self->parse_function('anonymous function');
+  my ($parameters, $body) = $self->parse_function('lambda');
   return Lox::Expr::Function->new({
       params => $parameters,
       body   => $body,

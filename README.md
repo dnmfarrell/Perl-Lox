@@ -53,8 +53,9 @@ The test suite includes 238 test files from the Crafting Interpreters
 Perl-Lox has these capabilities from the "challenges" sections of the book:
 
 - Anonymous functions `fun () { ... }`
-- Multi-line comments `/* ... */`
 - Break statements in loops
+- Multi-line comments `/* ... */`
+- New Exceptions:
     - Evaluating an uninitialized variable
 
 ### DIFFERENCES
