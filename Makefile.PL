@@ -9,7 +9,6 @@ WriteMakefile(
   PREREQ_PM        => {
     'enum'          => '0',
     'Getopt::Long'  => '0',
-    'Scalar::Util'  => '0',
     'Path::Tiny'    => '0',
     'Test::More'    => '0',
   },

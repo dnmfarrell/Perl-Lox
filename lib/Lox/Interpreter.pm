@@ -9,7 +9,6 @@ use Lox::Function;
 use Lox::Class;
 use Lox::Nil;
 use Lox::TokenType;
-use Scalar::Util 'looks_like_number';
 our $VERSION = 0.01;
 
 sub new {
