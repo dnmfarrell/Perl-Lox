@@ -14,8 +14,9 @@ my $had_error = undef;
 sub run_file {
   my ($path, $debug_mode) = @_;
   open my $fh, '<', $path or die "Error opening $path: $!";
-  my $bytes = do { local $/; <$fh> };
-  run($bytes, undef, $debug_mode);
+  my $text = do { local $/; <$fh> };
+  my $interpreter = Lox::Interpreter->new;
+  Lox::eval($interpreter, $text, $debug_mode);
   if ($had_error) {
     exit 65;
   }
@@ -24,36 +25,49 @@ sub run_file {
 sub run_prompt {
   my ($debug_mode) = @_;
   print "Welcome to Perl-Lox version $VERSION\n> ";
+  my $interpreter = Lox::Interpreter->new;
   while (my $line = <>) {
-    run($line, 'repl', $debug_mode);
+    Lox::eval($interpreter, $line, $debug_mode);
     undef $had_error;
     print "> ";
   }
 }
 
-sub run {
+sub eval {
+  my ($interpreter, $source, $debug_mode) = @_;
+
+  my $tokens = scan($source, $debug_mode);
+  return if $had_error;
+
+  my $stmts = parse($tokens, $debug_mode);
+  return if $had_error;
+
+  Lox::Resolver->new($interpreter)->run($stmts);
+  return if $had_error;
+
+  $interpreter->interpret($stmts);
+}
+
+sub scan {
   my ($source, $debug_mode) = @_;
   my $scanner = Lox::Scanner->new({source => $source});
   eval { $scanner->scan_tokens };
   if ($@) {
     die "Unexpected error: $@";
   }
-  else {
-    $scanner->print if $debug_mode;
-    return if $had_error;
-    my $parser = Lox::Parser->new({tokens => $scanner->{tokens}});
-    my $stmts = $parser->parse;
-    if ($parser->errors->@*) {
-      error(@$_) for ($parser->{errors}->@*);
-      return;
-    }
-    print Lox::AstPrinter->new->print_tree($stmts), "\n" if $debug_mode;
-    my $interpreter = Lox::Interpreter->new({});
-    my $resolver = Lox::Resolver->new($interpreter);
-    $resolver->run($stmts);
-    return if $had_error;
-    $interpreter->interpret($stmts);
+  $scanner->print if $debug_mode;
+  return $scanner->tokens;
+}
+
+sub parse {
+  my ($tokens, $debug_mode) = @_;
+  my $parser = Lox::Parser->new({tokens => $tokens});
+  my $stmts = $parser->parse;
+  if ($parser->errors->@*) {
+    error(@$_) for ($parser->{errors}->@*);
   }
+  print Lox::AstPrinter->new->print_tree($stmts), "\n" if $debug_mode;
+  return $stmts;
 }
 
 sub runtime_error {

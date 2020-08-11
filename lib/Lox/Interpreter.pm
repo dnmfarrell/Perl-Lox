@@ -14,6 +14,7 @@ our $VERSION = 0.01;
 
 sub new {
   my ($class, $args) = @_;
+  $args //= {};
   my $globals = Lox::Environment->new({});
   my $interpreter = bless {
     environment => $globals,

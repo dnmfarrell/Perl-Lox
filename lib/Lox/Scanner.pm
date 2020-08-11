@@ -16,6 +16,8 @@ sub new {
   }, $class;
 }
 
+sub tokens { $_[0]->{tokens} }
+
 sub print {
   my ($self) = @_;
   for ($self->{tokens}->@*) {
