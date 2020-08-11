@@ -32,7 +32,7 @@ sub run_prompt {
 }
 
 sub run {
-  my ($source, $is_repl, $debug_mode) = @_;
+  my ($source, $debug_mode) = @_;
   my $scanner = Lox::Scanner->new({source => $source});
   eval { $scanner->scan_tokens };
   if ($@) {
@@ -41,7 +41,7 @@ sub run {
   else {
     $scanner->print if $debug_mode;
     return if $had_error;
-    my $parser = Lox::Parser->new({tokens => $scanner->{tokens}, repl => $is_repl});
+    my $parser = Lox::Parser->new({tokens => $scanner->{tokens}});
     my $stmts = $parser->parse;
     if ($parser->errors->@*) {
       error(@$_) for ($parser->{errors}->@*);

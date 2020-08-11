@@ -13,7 +13,6 @@ sub new {
   my ($class, $args) = @_;
   return bless {
     tokens => ($args->{tokens} || die 'requires an arrayref of tokens'),
-    repl   => $args->{repl},
     errors => [],
     current=> 0,
   }, $class;
