@@ -168,6 +168,8 @@ Differences from the canonical "jlox" implementation:
 
 =over 2
 
+=item * repl is stateful
+
 =item * signed zero is unsupported
 
 =item * methods are equivalent

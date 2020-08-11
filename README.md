@@ -62,6 +62,7 @@ Perl-Lox has these capabilities from the "challenges" sections of the book:
 
 Differences from the canonical "jlox" implementation:
 
+- repl is stateful
 - signed zero is unsupported
 - methods are equivalent
 
