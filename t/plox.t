@@ -1,8 +1,8 @@
 #!perl
 use strict;
 use warnings;
+use File::Find 'find';
 use Test::More;
-use Path::Tiny 'path';
 
 my $LOX_PATH = 'bin/plox';
 my $TEST_PATH = 'test';
@@ -12,12 +12,15 @@ my @UNSUPPORTED = (
   'benchmark/', # take forever to run
 );
 
-my $iter = path($TEST_PATH)->iterator({ recurse => 1 });
-while (my $p = $iter->()) {
-  next unless $p =~ /\.lox$/;
-  next if grep { $p =~ m($_) } @UNSUPPORTED;
-  test_file($p->stringify);
-}
+find({
+  no_chdir => 1,
+  wanted   => sub {
+    return unless $File::Find::name =~ /\.lox$/;
+    return if grep { $File::Find::name =~ m($_) } @UNSUPPORTED;
+    test_file($File::Find::name);
+  }
+}, $TEST_PATH);
+
 
 done_testing;
 
