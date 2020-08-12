@@ -1,7 +1,14 @@
 package Lox::Resolver;
 use strict;
 use warnings;
-use enum qw(CLASS FUNCTION INITIALIZER METHOD NONE SUBCLASS);
+
+BEGIN {
+  my @constants = qw(CLASS FUNCTION INITIALIZER METHOD NONE SUBCLASS);
+  my %constant_values = map { $constants[$_] => $_ } 0..$#constants;
+  require constant;
+  constant->import(\%constant_values);
+}
+
 our $VERSION = 0.01;
 
 sub new {

@@ -22,8 +22,10 @@ my @tokens = qw(
   EOF
 );
 
-require enum;
-enum->import(@tokens);
+my %token_values = map { $tokens[$_] => $_ } 0..$#tokens;
+
+require constant;
+constant->import(\%token_values);
 our @EXPORT = (@tokens, 'type');
 
 sub type { $tokens[shift] }

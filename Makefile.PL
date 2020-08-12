@@ -7,7 +7,7 @@ WriteMakefile(
   MIN_PERL_VERSION => '5.24.0',
   NAME             => "Lox",
   PREREQ_PM        => {
-    'enum'          => '0',
+    'File::Find'    => '0',
     'Getopt::Long'  => '0',
     'Test::More'    => '0',
   },
