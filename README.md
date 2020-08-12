@@ -9,10 +9,8 @@ A Perl translation of the Java Lox interpreter from
 
 ### INSTALL
 
-To install the project dependencies and just run `plox` from the project
-directory:
-
-    $ cpanm --installdeps .
+As long as you have Perl 5.24.0 or greater, you should be able to run `plox`
+from the root project directory.
 
 If you'd rather build and install it:
 
@@ -26,7 +24,7 @@ If you'd rather build and install it:
 If you have built and installed `plox`:
 
     $ plox
-    Welcome to Perl-Lox version 0.01
+    Welcome to Perl-Lox version 0.02
     >
 
     $ plox hello.lox
@@ -35,11 +33,14 @@ If you have built and installed `plox`:
 Otherwise from the root project directory:
 
     $ perl -Ilib bin/plox
-    Welcome to Perl-Lox version 0.01
+    Welcome to Perl-Lox version 0.02
     >
 
     $ perl -Ilib bin/plox hello.lox
     Hello, World!
+
+Pass the `--debug` or `-d` option to `plox` to print the tokens it scanned
+and the parse tree.
 
 ### TESTING
 
