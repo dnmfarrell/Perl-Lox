@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 package Lox::Expr;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub new {
   my ($class, $args) = @_;
@@ -10,7 +10,7 @@ sub new {
 
 package Lox::Expr::Variable;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub name { $_[0]->{name} }
 
@@ -21,7 +21,7 @@ sub accept {
 
 package Lox::Expr::Unary;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub operator { $_[0]->{operator} }
 sub right { $_[0]->{right} }
 
@@ -32,7 +32,7 @@ sub accept {
 
 package Lox::Expr::Assign;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub name { $_[0]->{name} }
 sub value { $_[0]->{value} }
 
@@ -43,7 +43,7 @@ sub accept {
 
 package Lox::Expr::Binary;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub left { $_[0]->{left} }
 sub operator { $_[0]->{operator} }
 sub right { $_[0]->{right} }
@@ -55,7 +55,7 @@ sub accept {
 
 package Lox::Expr::Call;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub arguments { $_[0]->{arguments} }
 sub callee { $_[0]->{callee} }
 sub paren { $_[0]->{paren} }
@@ -67,7 +67,7 @@ sub accept {
 
 package Lox::Expr::Get;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub name { $_[0]->{name} }
 sub object { $_[0]->{object} }
 
@@ -78,7 +78,7 @@ sub accept {
 
 package Lox::Expr::Function;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub params { $_[0]->{params} }
 sub body   { $_[0]->{body} }
 
@@ -89,7 +89,7 @@ sub accept {
 
 package Lox::Expr::Grouping;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub expression { $_[0]->{expression} }
 
 sub accept {
@@ -99,7 +99,7 @@ sub accept {
 
 package Lox::Expr::Literal;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub value { $_[0]->{value} }
 
 sub accept {
@@ -109,7 +109,7 @@ sub accept {
 
 package Lox::Expr::Logical;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub left { $_[0]->{left} }
 sub operator { $_[0]->{operator} }
 sub right { $_[0]->{right} }
@@ -121,7 +121,7 @@ sub accept {
 
 package Lox::Expr::Set;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub name { $_[0]->{name} }
 sub object { $_[0]->{object} }
 sub value { $_[0]->{value} }
@@ -133,7 +133,7 @@ sub accept {
 
 package Lox::Expr::Super;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub keyword { $_[0]->{keyword} }
 sub method  { $_[0]->{method} }
 
@@ -144,7 +144,7 @@ sub accept {
 
 package Lox::Expr::This;
 use parent -norequire, 'Lox::Expr';
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 sub keyword { $_[0]->{keyword} }
 sub name { $_[0]->keyword }
 

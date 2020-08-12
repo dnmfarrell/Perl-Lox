@@ -9,7 +9,7 @@ BEGIN {
   constant->import(\%constant_values);
 }
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub new {
   my ($class, $interpreter) = @_;

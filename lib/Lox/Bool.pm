@@ -23,6 +23,6 @@ use Exporter 'import';
 our $True = $Lox::True::True;
 our $False = $Lox::False::False;
 our @EXPORT = qw($True $False);
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 1;

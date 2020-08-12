@@ -7,7 +7,7 @@ use Lox::Parser;
 use Lox::Resolver;
 use Lox::Scanner;
 use Lox::TokenType;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 my $had_error = undef;
 

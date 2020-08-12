@@ -7,7 +7,7 @@ use Lox::Nil;
 use Lox::Stmt;
 use Lox::String;
 use Lox::TokenType;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub new {
   my ($class, $args) = @_;

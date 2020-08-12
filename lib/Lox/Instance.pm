@@ -8,7 +8,7 @@ use overload (
 );
 use strict;
 use warnings;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub new {
   my ($class, $args) = @_;

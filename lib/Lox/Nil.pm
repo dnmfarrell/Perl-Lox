@@ -12,6 +12,6 @@ use Exporter 'import';
 my $u = undef;
 our $Nil = bless \$u, 'Lox::Nil';
 our @EXPORT = qw($Nil);
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 1;

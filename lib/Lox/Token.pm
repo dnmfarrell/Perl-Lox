@@ -2,7 +2,7 @@ package Lox::Token;
 use strict;
 use warnings;
 use Lox::TokenType ();
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub new {
   my ($class, $args) = @_;
